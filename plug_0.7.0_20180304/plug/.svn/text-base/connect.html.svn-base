@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <meta name="full-screen" content="yes">
+  <meta name="x5-fullscreen" content="true">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="format-detection" content="telephone=no,email=no" />
+  <title>Connecting</title>
+  <link rel="stylesheet" type="text/css" href="css/style.css">
+  <link rel="stylesheet" type="text/css" href="css/plug.css">
+  <script>
+    !function(){var fontSize=parseFloat(getComputedStyle(document.getElementsByTagName('html')[0], null)['font-size']);function a(){document.documentElement.style.fontSize=document.documentElement.clientWidth/750*10/fontSize*1000+"%"}var b=null;window.addEventListener("resize",function(){clearTimeout(b);b=setTimeout(a,300)},!1);a()}(window);
+  </script>
+</head>
+<body>
+  <header>
+    <img src="images/top_back_ic.png" class="headerL" id="connectBack"/>
+    <p class="headerTitle">Connecting</p>
+  </header>
+  <section class="Main">
+    <div class="connecting">
+      <div class="radialProgress" id="radialProgress">
+      </div>
+      <p class="contentingTip">
+        Connecting...<br>Keep your router,phone and device </br>close with each other
+      </p>
+    </div>
+  </section>
+
+  <script src="js/jquery-3.2.1.min.js"></script>
+  <script src="js/fastclick.min.js"></script>
+  <script src="js/lenovoSmartJsSdk.js"></script>
+  <script src="js/js.js"></script>
+  <script src="js/radia.js"></script>
+  <script src="js/"></script>
+  <script type="text/javascript">
+  var radialObj = radialIndicator('#radialProgress',{
+    barBgColor: '#e6e6e6',
+    barColor: '#007aff',
+    barWidth: 3,
+    initValue: 0,
+    roundCorner : true,
+    percentage: true,
+    fontColor: '#333',
+    fontSize: 20,
+    fontWeight: 300
+  })
+  var Gtimer202;
+  var Gtimer203;
+  var Gtimer204;
+  var Gtimer101;
+  var Gtimer102;
+  var Gtimer103;
+  var GhubMac;
+  var GhubName;
+  var Gvendor;
+  var Gmacaddr;
+  var Ghubtype;
+  var iosTimeOut0 = 1;
+  var iosTimeOut1 = 1;
+  var iosTimeOut2 = 1;
+  var iosTimeOut3 = 1;
+  var iosTimeOut4 = 1;
+  var wifiName;
+  var wifiPwd;
+  if(LenSmJs.isiOS == true){
+    //ios第一步 softAp
+    var wifi_name = wifiName;
+    var wifi_passWord = wifiPwd;
+    var wifi_nowDate = Date.parse(new Date())/1000;
+    var wifi_nowTimeZone = getTimezoneName();
+    Gtimer204 = setInterval(function(){
+      if(iosTimeOut4 == 1){
+        var wifi_nowDate = Date.parse(new Date())/1000;
+        LenSmJs.softAPNew_h5(wifi_name,wifi_passWord,wifi_nowDate,wifi_nowTimeZone);
+      }
+    },5000);
+    LenSmJs.softAPNew_h5(wifi_name,wifi_passWord,wifi_nowDate,wifi_nowTimeZone);
+    //超时
+    Gtimer101 = setTimeout(function(){
+      iosTimeOut0 = 0;
+      iosTimeOut1 = 0;
+      iosTimeOut4 = 0;
+      if(Gtimer204){
+        clearInterval(Gtimer204);
+      }
+      //超时
+      console.log('超时')
+    },60000);
+  }else{
+    //Android注册监听
+    LenSmJs.getAddListener_h5();
+    // var gadgetKinds = "LenovoSmartAir";
+    var gadgetKinds = "Lnv_103";
+    var ssid = wifiName; //账号
+    var psd = wifiPwd;   //密码
+    var ip = "192.168.199.1";  //固定
+    var ls = "cn";      //服务器
+    var sl = "dev";     //服务器级别
+    var perCode = "";
+    var timeZone = getTimezoneName();    //时区
+    var cn = "false";    //网络配置流程+绑定流程
+    var wctom = "60000";    //wifi连接超时时间
+    var stom = "60000";     //softAp超时时间
+    var btom = "120000";    //绑定超时时间
+    var cgtom = "120000";   //创建设备超时时间
+    var commongadget = "true";  //固定
+    //安卓绑定流程
+    LenSmJs.startAutoFindDeviceBySoftAp_h5(gadgetKinds,ssid, psd,ip, ls, sl, perCode, timeZone, cn, wctom, stom, btom, cgtom,commongadget);
+  }
+
+  //返回
+  function callbackdata(id,name,data){
+    if (name == "ReadSSIDAndPwd") {
+      var wifiName = data.ssid
+      var wifiPwd = data.pwd
+    }
+    if(name == "softAPNew" && iosTimeOut0 == 1){
+      var data = eval('('+data+')');
+      if(data.state){
+        console.log("soft成功");
+        iosTimeOut0 = 0;
+        iosTimeOut4 = 0;
+        if(Gtimer204){
+          clearInterval(Gtimer204);
+        }
+        if(Gtimer101){
+          clearTimeout(Gtimer101);
+        }
+        radialObj.animate(50);
+        Ghubtype = 1000101;//102;//data.hubtype;
+        Gmacaddr = data.macaddr;
+        //ios第二步：绑定Hub
+        LenSmJs.bindHub_h5(Gmacaddr,Ghubtype);
+        Gtimer202 = setInterval(function(){
+          if(iosTimeOut1 == 1){
+            LenSmJs.bindHub_h5(Gmacaddr,Ghubtype);
+          }
+        },5000);
+        //超时
+        Gtimer102 = setTimeout(function(){
+          clearInterval(Gtimer202);
+          iosTimeOut1 = 0;
+          //超时
+          console.log('请连续按开关5下,重置设备')
+        },120000);
+      }
+    }
+    if(name == "bindHub"  && iosTimeOut1 == 1){
+      var data = eval('('+data+')');
+      console.log("bindHub return "+data.code);
+      if(data.state || data.code == "42409"){
+        console.log("bindHub成功");
+        iosTimeOut1 = 0;
+        if(Gtimer202){
+          clearInterval(Gtimer202);
+        }
+        if(Gtimer102){
+          clearTimeout(Gtimer102);
+        }
+        Gmacaddr = data.macaddr;
+        //ios第三步：
+        radialObj.animate(80);
+        LenSmJs.updateGadgetListWithResultBlock_h5(Gmacaddr);
+        Gtimer203 = setInterval(function(){
+          if(iosTimeOut2 == 1){
+            LenSmJs.updateGadgetListWithResultBlock_h5(Gmacaddr);
+          }
+        },5000);
+        Gtimer103 = setTimeout(function(){
+          if(Gtimer203){
+            clearInterval(Gtimer203);
+          }
+          iosTimeOut2 = 0;
+          //超时
+          console.log('超时，请重新匹配')
+        },120000);
+      }else{
+        console.log("bindHub失败，等待超时");
+      }
+    }
+    if(name == "updateGadgetListWithResultBlock" && iosTimeOut2 == 1){
+      var data = eval('('+data+')');
+      if(data.state){
+        console.log("设备列表获取成功");
+        iosTimeOut2 = 0;
+        if(Gtimer203){
+          clearInterval(Gtimer203);
+        }
+        if(Gtimer103){
+          clearTimeout(Gtimer103);
+        }
+        radialObj.animate(100);
+        var gadgetId = data.gadget_id;
+        var gadgetName = data.gadget_name;
+        localStorage.setItem("gadgetId",gadgetId);
+        localStorage.setItem("gadgetName",gadgetName);
+        console.log(gadgetId);
+        console.log("设备名字"+gadgetName);
+        setTimeout(function(){
+          location.href='succ_connected.html';
+        },1300);
+      }
+    }
+    // 安卓返回
+    if(name == "onDeviceWifiConnectSuccess"){
+      console.log("匹配成功");
+      radialObj.animate(50);
+    }
+    if(name == "onDeviceWifiConnectTimeout"){
+      console.log("匹配失败");
+        //设备wifi连接超时
+      location.href='wifiConfirm.html';
+    }
+    if(name == "onSoftApSuccess"){
+      console.log("sdftap成功");
+      radialObj.animate(80);
+    }
+    if(name == "onSoftApTimeout"){
+      console.log("sdft失敗");
+      //softAp超时
+      console.log('连接超时')
+    }
+    if(name == "onBindSuccess"){
+      console.log("绑定成功");
+      //绑定成功
+      radialObj.animate(100);
+    }
+    if(name == "onBindError"){
+      console.log("绑定失敗");
+      //绑定失败
+      if(data == "-8" || data == "42409"){
+        //表示被自己绑定
+        console.log("当这种绑定状态时，则默认第二步成功");
+        //$("#bb4").html("-8或42409");
+        radialObj.animate(100);
+      }else if(data == "103"){
+        console.log("失败 提示被其他用户绑定");
+        console.log('设备已被其他账户连接，请联系客服解决')
+      }
+    }else{
+      //绑定超时
+      console.log("绑定超时");
+      console.log('请连续按开关5下,重置设备')
+    }
+    if(name == "onCreateGadgetSuccess"){
+      JsInterface.H5_Log("h5创建设备成功");
+      console.log("创建设备成功");
+      //先完成，保证绑定流程。
+      radialObj.animate(100);
+      setTimeout(function(){
+        location.href='succ_connected.html';
+      },1300);
+      var gadgetName = data.split(",")[1];
+      var gadgetId = data.split(",")[2];
+      JsInterface.H5_Log("h5设备名字："+gadgetName);
+      JsInterface.H5_Log("h5设备id:"+gadgetId);
+      if(gadgetName && gadgetId){
+        localStorage.setItem("gadgetName",gadgetName);
+        localStorage.setItem("gadgetId",gadgetId);
+      }
+    }
+    if(name == "onCreateGadgetTimeout"){
+      console.log("创建设备超时onCreateGadgetTimeout");
+      console.log('请重新启动App、断开设备电源,再次连接设备电源后重新配置')
+    }
+  }
+
+  // 点击返回
+  $(document).on('click', '#connectBack', function(){
+    LenSmJs.stopAutoFindDevice_h5();
+    location.href = "add.html";
+  })
+  if(LenSmJs.isAndroid == true){
+    //Android 点击手机物理返回键
+    pushHistory();
+    window.addEventListener("popstate", function(e) {
+      //Android停止自动发现设备接口
+      LenSmJs.stopAutoFindDevice_h5();
+      location.href = "add.html";
+    }, false);
+    function pushHistory() {
+      var state = {
+        title: "title",
+        url: "#"
+      };
+      window.history.pushState(state, "title", "#");
+    }
+  }
+  </script>
+</body>
+</html>

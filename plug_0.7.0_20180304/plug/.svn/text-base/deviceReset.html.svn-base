@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <meta name="full-screen" content="yes">
+  <meta name="x5-fullscreen" content="true">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="format-detection" content="telephone=no,email=no" />
+  <title>Device reset</title>
+  <link rel="stylesheet" type="text/css" href="css/style.css">
+  <link rel="stylesheet" type="text/css" href="css/plug.css">
+  <script>
+    !function(){var fontSize=parseFloat(getComputedStyle(document.getElementsByTagName('html')[0], null)['font-size']);function a(){document.documentElement.style.fontSize=document.documentElement.clientWidth/750*10/fontSize*1000+"%"}var b=null;window.addEventListener("resize",function(){clearTimeout(b);b=setTimeout(a,300)},!1);a()}(window);
+  </script>
+</head>
+<body style="background:#fff">
+  <header>
+    <img src="images/top_back_ic.png" class="headerL" id="backPrev"/>
+    <p class="headerTitle">Device reset</p>
+    <p class="headerRP">Help</p>
+  </header>
+  <section class="Main">
+    <div class="connected">
+      <img src="images/plug.png" class="connectedImg" />
+      <p class="connectedTip">
+        Press and hold the power button for 5</br>seconds,the blue light flashes,indicating that the reset was successful.
+      </p>
+    </div>
+  </section>
+  <button class="nextBtn" id="nextBtn">NEXT</button>
+
+  <script src="js/jquery-3.2.1.min.js"></script>
+  <script src="js/fastclick.min.js"></script>
+  <script src="js/lenovoSmartJsSdk.js"></script>
+  <script src="js/plug.js"></script>
+  <script type="text/javascript">
+  //点击返回
+  $(document).on('click', '#nextBtn', function(){
+    LenSmJs.initFinish_h5()
+  })
+<!--  if(LenSmJs.isAndroid == true){-->
+<!--    //Android 点击手机物理返回键-->
+<!--    pushHistory();-->
+<!--    window.addEventListener("popstate", function(e) {-->
+<!--      LenSmJs.initFinish_h5();-->
+<!--    }, false);-->
+<!--    function pushHistory() {-->
+<!--      var state = {-->
+<!--        title: "title",-->
+<!--        url: "#"-->
+<!--      };-->
+<!--      window.history.pushState(state, "title", "#");-->
+<!--    }-->
+<!--  }-->
+  </script>
+</body>
+</html>

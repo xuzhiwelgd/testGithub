@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <meta name="full-screen" content="yes">
+  <meta name="x5-fullscreen" content="true">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="format-detection" content="telephone=no,email=no" />
+  <title>Select WiFi network</title>
+  <link rel="stylesheet" type="text/css" href="css/style.css">
+  <link rel="stylesheet" type="text/css" href="css/plug.css">
+  <script>
+    !function(){var fontSize=parseFloat(getComputedStyle(document.getElementsByTagName('html')[0], null)['font-size']);function a(){document.documentElement.style.fontSize=document.documentElement.clientWidth/750*10/fontSize*1000+"%"}var b=null;window.addEventListener("resize",function(){clearTimeout(b);b=setTimeout(a,300)},!1);a()}(window);
+  </script>
+  </head>
+  <body style="background: #fff">
+    <header>
+      <img src="images/top_back_ic.png" class="headerL" id="backStopFind" />
+      <p class="headerTitle">Select WiFi network</p>
+    </header>
+    <section class="content">
+      <img src="images/wifiset.png" class="wifiSetImg" />
+      <p class="wifiSetTip">
+        Connect your phone to “Lenovo_103_XXXX” </br> and return to Link app
+      </p>
+      <p class="wifiSetTitle"></p>
+    </section>
+      <button class="nextBtn none" id="setWifi">SET WI-FI</button>
+      <button class="nextBtn none" id="wifiConfirm">NEXT</button>
+    </div>
+
+    <script src="js/jquery-3.2.1.min.js"></script>
+    <script src="js/fastclick.min.js"></script>
+    <script src="js/lenovoSmartJsSdk.js"></script>
+    <script src="js/base64.js"></script>
+    <script type="text/javascript">
+
+    LenSmJs.GetWifiName_h5()
+    
+    $(document).on('click', '#wifiConfirm', function(){
+      location.href = 'connect.html'
+    })
+
+    $(document).on('click', '#setWifi', function(){
+      location.href = 'add.html'
+    })
+
+    function callbackdata(id,name,data){
+      if (name === 'GetWifiName') {
+        var base = new Base64();
+        data = base.decode(data);
+        $('.wifiSetTitle').text('Your current network : '+data)
+
+        if (data.indexOf('Lnv_10') < 0) {
+          $('#setWifi').show()
+        }else{
+          $('#wifiConfirm').show()
+        }
+      }
+    }
+    // //点击返回
+    $(document).on('click', '#backStopFind', function(){
+      LenSmJs.stopAutoFindDevice_h5();
+      location.href = "add.html"
+    })
+    if(LenSmJs.isAndroid == true){
+        //Android 点击手机物理返回键
+        pushHistory();
+        window.addEventListener("popstate", function(e) {
+            LenSmJs.stopAutoFindDevice_h5();
+            location.href = "add.html";
+        }, false);
+        function pushHistory() {
+            var state = {
+                title: "title",
+                url: "#"
+            };
+            window.history.pushState(state, "title", "#");
+        }
+    }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1" />
+    <title>移除设备</title>
+    <link rel="stylesheet" href="css/common.css"/>
+    <link rel="stylesheet" href="css/css.css"/>
+</head>
+<body>
+
+
+<!--alert-->
+<div class="tan_shadow"></div>
+
+<!--移除设备提示-->
+<div class="tan_removets">
+    <div class="txt">移除设备后，您将无法控制<br />该设备，是否继续？</div>
+    <div class="btns">
+        <p class="tan_qx1">取消</p>
+        <p class="tan_sure1">继续</p>
+    </div>
+</div>
+
+
+<!--正在移除设备-->
+<div class="tan_removeing none">
+    <div class="img"><img src="images/removeing.gif" alt=""/></div>
+    <p>正在移除设备</p>
+</div>
+
+<!--移除设备完成提示-->
+<div class="tan_remove_sucts none">
+    <div class="img"><img src="images/suc.gif" alt=""/></div>
+    <p>移除完成</p>
+</div>
+
+<!--设备移除失败-->
+<div class="tan_removefailts none">
+    <div class="txt">对不起，设备移除失败</div>
+    <div class="btns">
+        <p class="tan_qx3">返回</p>
+        <p class="tan_sure3">重试</p>
+    </div>
+</div>
+<script src="js/jquery.min.js"></script>
+<script src="js/lenovoSmartJsSdk.js" type="text/javascript"></script>
+<script src="js/js.js" type="text/javascript"></script>
+<script>
+    /**
+     *  设定全局变量(G开头)，控制页面的属性
+     *  GhubId : hub id
+     * gadgetId ：设备号
+    */
+    var GhubId;
+    var gadgetId;
+
+    //获取设备号
+    gadgetId = localStorage.getItem("gadgetId");
+    //[step1]根据id获取设备信息，并呈现在页面上
+    if(gadgetId){
+        LenSmJs.GetGagdgetInfoWithId_h5(gadgetId);
+    }
+
+
+   $(function(){
+       //移除设备提示
+       $(".tan_sure1").click(function(){
+           //继续移除HUB
+           //隐藏“移除设备提示”
+           $(".tan_removets").hide();
+           //显示“正在移出设备”
+           $(".tan_removeing").show();
+
+           //[step2]提醒设备移除，并获取移除的进度状态
+           console.log("step1:开始解绑设备");
+           LenSmJs.UnbindHub_h5("ITEM_TYPE_HUB",GhubId);
+       });
+       //设备移除失败
+       //点击“重试”
+       $(".tan_sure3").click(function(){
+           //隐藏“设备移除失败”
+           $(".tan_removefailts").hide();
+           //显示“正在移除设备”
+           $(".tan_removeing").show();
+           //[step3]提醒设备移除，并获取移除的进度状态
+           console.log("step3:继续解绑设备");
+           LenSmJs.UnbindHub_h5("ITEM_TYPE_HUB",GhubId);
+       });
+       //点击“返回”
+       $(".tan_qx3,.tan_qx1").click(function(){
+           location.href="set.html";
+       });
+   });
+
+
+
+   /**
+    * app回调数据：
+    */
+   function callbackdata(id,name,data){
+       if(name == "GetGagdgetInfoWithId"){
+           var data = eval('(' + data + ')');
+           GhubId = data.hub_id;
+       }
+       if(name == "UnbindHub"){
+           console.log("step2:解绑设备返回");
+           var data = eval('(' + data + ')');
+           if(data.state == "1"){
+               //显示“设备移除成功”
+               console.log("step4:设备移除成功");
+               $(".tan_remove_sucts").show();
+               setTimeout(function(){
+                   LenSmJs.initFinish_h5();
+               },1300);
+           }else{
+               //移除失败
+               console.log("step5:设备移除失败");
+               //隐藏“正在移除设备”
+               $(".tan_removeing").hide();
+               //显示“设备移除失败”
+               $(".tan_removefailts").show();
+           }
+       }
+   }
+
+</script>
+</body>
+</html>

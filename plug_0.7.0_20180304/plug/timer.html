@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+  <meta charset="UTF-8">
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <meta name="full-screen" content="yes">
+  <meta name="x5-fullscreen" content="true">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="format-detection" content="telephone=no,email=no" />
+  <title>Timer</title>
+  <link rel="stylesheet" type="text/css" href="css/plug2.css">
+  <link rel="stylesheet" type="text/css" href="css/style.css">
+  <link rel="stylesheet" type="text/css" href="css/mobiscroll.custom-2.17.2.min.css">
+  <script>
+    !function(){var fontSize=parseFloat(getComputedStyle(document.getElementsByTagName('html')[0], null)['font-size']);function a(){document.documentElement.style.fontSize=document.documentElement.clientWidth/750*10/fontSize*1000+"%"}var b=null;window.addEventListener("resize",function(){clearTimeout(b);b=setTimeout(a,300)},!1);a()}(window);
+  </script>
+  </head>
+  <body style="background:#f2f2f2">
+ <header> <img src="images/top_back_ic.png" class="headerL" id="backTop"/>
+    <p class="headerTitle">Timer</p>
+    <p class="headerRP" id="OK">OK</p>
+  </header>
+<section class="timer_wrap">
+    <p class="timer_title">Set time</p>
+    <ul class="timer_set">
+    <ol id="changeTime"><img src="images/switch_btn.png"></ol>
+    <li id="firstExecute">
+    <div id="openDiv">
+        <p class="timer_switch" data-state='on'>Turn on later</p>
+        <p class="timer_time timer_div">
+        <input value="00 h 00 m" class="appTime0 timer_pad" readonly name="appTime" id="appTime1" type="text">
+      </p>
+        <div class="btn_switch">
+        <input type="checkbox" id="checkbox1" class="chk_3" checked />
+        <label for="checkbox1"></label>
+      </div></div>
+      </li>
+          <li id="secondExecute"><div id="closeDiv">
+        <p class="timer_switch" data-state='off'>Turn off later</p>
+        <p class="timer_time timer_div">
+        <input value="00 h 00 m"  readonly name="appTime2" class="timer_pad" id="appTime2" type="text">
+      </p>
+        <div class="btn_switch">
+        <input type="checkbox" id="checkbox2" class="chk_3" checked />
+        <label for="checkbox2"></label>
+      </div></div>
+      </li>
+  </ul>
+  </section>
+<script src="js/jquery-3.2.1.min.js"></script>
+<script src="js/fastclick.min.js"></script>
+<script src="js/lenovoSmartJsSdk.js"></script> 
+<script src="js/plug.js"></script> 
+<script src="js/mobiscroll.custom-2.17.2.min.js"></script>
+<script src="js/js.js"></script> 
+<script type="text/javascript">
+var isOnFirst =true; // 上下顺序
+var Gline;
+
+    gadgetId=LenSmJs.gadgetId_h5();
+    if(!gadgetId){
+         gadgetId = localStorage.getItem("gadgetId");
+         //[step2:Android 需要传递一次gadgetId，以便其储存起来使用]
+        LenSmJs.saveGadgetId_h5(gadgetId);
+    }
+    //
+    // //[step3:Android 注册监听:只有实例化的监听才能收到变化通知]
+     LenSmJs.getAddListener_h5();
+
+    // //[step4:进页面去请求、获取设备离线状态]
+     LenSmJs.GetGadgetState_h5(gadgetId);
+
+     if(gadgetId){
+       //设置新的gadgetId覆盖旧的
+       localStorage.setItem("gadgetId",gadgetId);
+       //初始化页面 主动请求属性数据
+       LenSmJs.FindGadgetById_h5(gadgetId);
+     }
+/**
+    * app回调数据：
+    */
+    function callbackdata(id,name,data){
+        console.log("callbackdata id="+id+", name="+name+", data="+data);
+        //属性操作回调与属性改变监听回调name:BackExcuteList
+       if(name == "BackExcuteList"){
+            location.href='set.html';
+       }
+       
+        
+        //主动请求属性数据回调name：FindGadgetById
+       if( name == "FindGadgetById"){
+           if(typeof(data) == "string"){
+               data = eval('('+data+')');
+           }
+           updateActionsState(data);
+       }
+       
+       //判断设备是否离线：GetGadgetState   data.state 0 离线； 1 在线
+       if(name == "GetGadgetState"){
+           var data =eval('('+data+')');
+           if(data.state == 1){
+               Gline = 1;
+           }else{
+               Gline = 0;
+           }
+           if(Gline == 0){
+               //提示设备已离线提示
+               c_lxts();
+           }
+       }
+
+   }
+
+    function parseTimer(timer){
+        //yyMMddhhmm:offset:enable
+        if(timer == null || timer.length < 10 )
+            return new Date();
+        return new Date("20"+timer.substring(0,2), parseInt(timer.substring(2,4))-1, timer.substring(4,6), timer.substring(6,8), timer.substring(8,10) );
+    }
+
+
+   //刷新属性状态
+    function updateActionsState(data){
+        if(data){
+            $.each(data,function(i,v){
+                var bsxid;
+                if(v.attribute_id){
+                    bsxid = v.attribute_id;
+                }
+                var val = 0;
+                if(v.value){
+                    val = v.value[0];
+                }
+                if( bsxid == "0x00030002"){ //延时
+                    
+                   //T:M:E,T:M:E
+                   if(val == null || val.length < 11){
+                        $('#appTime1').mobiscroll('show', true)
+                        return;
+                   }
+                   var arrs1 = val.split(",");
+                   if(arrs1.size<2){
+                        console.log("延时数据格式有误！请检查"+val);
+                        $('#appTime1').mobiscroll('show', true)
+                        return
+                   }
+                   
+                   var onArrs = arrs1[0].split(":");
+                   var offArrs = arrs1[1].split(":");
+                   if(onArrs.size<3 || offArrs.size <3){
+                        console.log("延时数据格式有误！请检查"+val);
+                        $('#appTime1').mobiscroll('show', true)
+                        return
+                   }
+                   
+                   var onDate = parseTimer(onArrs[0]);
+                   var offDate = parseTimer(offArrs[0]);
+                   var onOffset = onArrs[1] ;
+                   var offOffset = offArrs[1] ;
+                   var onEnable = onArrs[2] != "0";
+                   var offEnable = offArrs[2] != "0";
+                   
+                   $('#firstExecute').find('.timer_switch').text('Turn on later')
+                   $('#secondExecute').find('.timer_switch').text('Turn off later')
+                   $('#appTime1').val(parseInt(onOffset/60) +" h " + onOffset%60 +" mins");
+                   $('#appTime2').val(parseInt(offOffset/60) +" h " + offOffset%60 +" mins");
+                   $('#checkbox1').prop("checked", onEnable);
+                   $('#checkbox2').prop("checked", offEnable);
+                   $('#appTime1').mobiscroll('show', true)
+
+                   isOnFirst = onDate <= offDate;
+                   if(!isOnFirst)
+                     exchangeTimer();
+                }
+
+            });
+        }
+    }
+
+function convertTime2(timeVal){
+    var val = parseInt(timeVal);
+     if(val < 10 )
+        val = "0"+val;
+     return val;
+}
+
+function parseValue(valueText){
+    var arr = valueText.split(" ");
+    var rtArray = new Array(parseInt(arr[0]),parseInt(arr[2]));
+    return rtArray;
+  }
+
+function formatResult(arr){
+    var result = convertTime2(arr[0]) + ' h ' +convertTime2(arr[1])+' m'
+    return result;
+  }
+
+var canCloseTime1 = false
+var canCloseTime2 = true
+var currentMobiscroll = $('#appTime1');
+$('#appTime1,#appTime2').mobiscroll().time({
+  display: 'bottom', //显示方式modal
+  theme: 'android-holo-light', //皮肤样式
+  mode: 'scroller', //日期选择模式
+  lang: 'en',
+  hourText: 'h',
+  minuteText: 'm',
+  showLabel:'true',
+  timeFormat: 'HH:ii',
+  timeWheels: 'HHii',
+  parseValue: parseValue,
+  formatResult:formatResult,
+  onBeforeShow:function(inst){
+    currentMobiscroll = $(this);
+    if($(this).attr('id') == "appTime1"){
+        canCloseTime1 = false;
+        canCloseTime2 = true;
+     }else{
+        canCloseTime1 = true;
+        canCloseTime2 = false;
+    }
+    var value = $(this).val();
+    var rtArray = parseValue(value);
+    $(this).mobiscroll('setValue', rtArray, true, 0, true);
+  },
+  onChange:function(valueText, inst){
+    $(this).val(valueText)
+  },
+  onClose:function(valueText, inst){
+      var id = $(this).attr('id')
+      var canClose
+      if(id == "appTime1"){
+        canClose = canCloseTime1;
+        lastTime1 = valueText;
+      }else{
+        canClose = canCloseTime2;
+        lastTime2 = valueText;
+      }
+     return canClose;
+  }
+});
+
+function getMinutes(formatOffset){
+    var arr = parseValue(formatOffset)
+    return arr[0]*60 + arr[1];
+}
+
+$(document).on('click', '#OK', function(){
+    console.log('click start');
+    //发送延时操作
+    var date = new Date();
+    var offset1 = getMinutes($('#appTime1').val());
+    var offset2 = getMinutes($('#appTime2').val());
+    
+    console.log('click offset1='+offset1+", offset2="+offset2 +", isOnFirst="+isOnFirst);
+    
+    var onOffset = parseInt( isOnFirst? offset1:offset2 );
+    var offOffset = parseInt( isOnFirst? offset2:offset1 );
+
+    var onDate = new Date(date.valueOf() + (isOnFirst ? onOffset : (onOffset + offOffset) )  * 60 * 1000);
+    var offDate = new Date(date.valueOf() + (isOnFirst ? (onOffset + offOffset) : offOffset) * 60 * 1000);
+
+
+    var onEnable = isOnFirst ? $('#checkbox1').prop("checked"):$('#checkbox2').prop("checked");
+    var offEnable = isOnFirst ? $('#checkbox2').prop("checked"):$('#checkbox1').prop("checked");
+
+    //T:M:E,T:M:E
+    var strTimer=onDate.Format("yyMMddHHmm")+":"+onOffset+":"+(onEnable?"1":"0")
+        +","+offDate.Format("yyMMddHHmm")+":"+offOffset+":"+(offEnable?"1":"0");
+    
+    console.log('click strTimer='+strTimer);
+    LenSmJs.ExcuteAction_h5(gadgetId,"0x00030002" ,strTimer);
+    console.log('click end');
+})
+
+function exchangeTimer(){
+  if (isOnFirst) {
+    $('#firstExecute').find('.timer_switch').text('Turn on later')
+    $('#secondExecute').find('.timer_switch').text('Turn off later')
+  }else{
+    $('#firstExecute').find('.timer_switch').text('Turn off later')
+    $('#secondExecute').find('.timer_switch').text('Turn on later')
+  }
+  
+  var dateVal1 = $('#appTime1').val()
+  $('#appTime1').val($('#appTime2').val())
+  $('#appTime2').val(dateVal1)
+  
+  var tmpChecked = $('#checkbox1').prop("checked");
+  $('#checkbox1').prop("checked",$('#checkbox2').prop("checked") );
+  $('#checkbox2').prop("checked", tmpChecked);
+  
+  popUpScroll();
+}
+
+function popUpScroll(){
+    if( currentMobiscroll.attr('id') == 'appTime1'){
+        $('#appTime2').click();
+    }else {
+        $('#appTime1').click();
+    }
+}
+
+$(document).on('click', '#changeTime', function(){
+  isOnFirst = !isOnFirst;
+  exchangeTimer();
+})
+
+$(document).on('click', '#backTop', function(){
+  window.history.back()
+})
+
+$( document ).ready(function() {
+<!--var str = '[{"value":["1802061506:44:1,1802061422:6:1"],"attribute_id":"0x00020006","attr_time":"1517866143"}]'-->
+<!--  str = eval('('+str+')');-->
+<!--  updateActionsState(str)-->
+  $('#appTime1').mobiscroll('show', true)
+});
+
+
+</script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <meta name="full-screen" content="yes">
+  <meta name="x5-fullscreen" content="true">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="format-detection" content="telephone=no,email=no" />
+  <title>About smart bulb</title>
+  <link rel="stylesheet" type="text/css" href="css/style.css">
+  <link rel="stylesheet" type="text/css" href="css/bulb.css">
+  <script>
+    !function(){var fontSize=parseFloat(getComputedStyle(document.getElementsByTagName('html')[0], null)['font-size']);function a(){document.documentElement.style.fontSize=document.documentElement.clientWidth/750*10/fontSize*1000+"%"}var b=null;window.addEventListener("resize",function(){clearTimeout(b);b=setTimeout(a,300)},!1);a()}(window);
+  </script>
+</head>
+<body style="background:#f2f2f2">
+  <header>
+    <img src="images/top_back_ic.png" class="headerL" id="backTop"/>
+    <p class="headerTitle">About smart bulb</p>
+  </header>
+  <section class="Main">
+      <img src="images/bulb.png" class="aboutImg" />
+      <p class="aboutName">Lenovo smart bulb</p>
+      <ul class="aboutList"><li><span>hv.1.1.3</span>Device hardware version</li>
+      <li><span id="firmwareVer">sv.1.1.4</span>Device firmware version</li>
+      <li><span>ec-fa-88-a2-fa</span>MAC address</li></ul>
+  </section>
+
+
+  <script src="js/jquery-3.2.1.min.js"></script>
+  <script src="js/fastclick.min.js"></script>
+  <script src="js/lenovoSmartJsSdk.js"></script>
+  <script src="js/bulb.js"></script>
+  <script type="text/javascript">
+  var GcurrVersion = localStorage.getItem("GcurrVersion");
+  console.log('GcurrVersion:'+GcurrVersion)
+  if (GcurrVersion == null) {
+    $('#firmwareVer').text('')
+  }else{
+    $('#firmwareVer').text(GcurrVersion)
+  }
+  
+  $(document).on('click', '#backTop', function(){
+    window.history.back()
+  })
+  </script>
+</body>
+</html>

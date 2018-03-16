@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+  <meta charset="UTF-8">
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <meta name="full-screen" content="yes">
+  <meta name="x5-fullscreen" content="true">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="format-detection" content="telephone=no,email=no" />
+  <title>Edit group</title>
+  <link rel="stylesheet" type="text/css" href="css/style.css">
+  <link rel="stylesheet" type="text/css" href="css/plug2.css">
+  <script>
+    !function(){var fontSize=parseFloat(getComputedStyle(document.getElementsByTagName('html')[0], null)['font-size']);function a(){document.documentElement.style.fontSize=document.documentElement.clientWidth/750*10/fontSize*1000+"%"}var b=null;window.addEventListener("resize",function(){clearTimeout(b);b=setTimeout(a,300)},!1);a()}(window);
+  </script>
+  </head>
+  <body style="background:#fff">
+<header> <img src="images/top_back_ic.png" class="headerL" id="backPrev"/>
+    <p class="headerTitle">Edit group</p>
+    <p class="headerRP">Create</p>
+  </header>
+<div class="creategroupB"><img src="images/plug_Group.png">
+    <p>Plug group is aggregation of smart plug implementing the same function. </br>
+    For example, switch on/off at the same time.</p>
+  </div>
+<div class="creategroupL">
+    <p>Select smart plugs to create a group</p>
+    <ul>
+    <li> <img class="plug_ic" src="images/CombinedShape.png"> <span class="creategroupName">Smart plug 01</span> <span class="creategroupState">Living room, On</span> <img class="check" src="images/check_1.png"> </li>
+    <li> <img class="plug_ic" src="images/Smartplug_ic.png"> <span class="creategroupName">Smart plug 02</span> <span class="creategroupState">Living room, On</span> <img class="check" src="images/check_2.png"> </li>
+    <li> <img class="plug_ic" src="images/Smartplug_ic.png"> <span class="creategroupName">Smart plug 03</span> <span class="creategroupState">Living room, On</span> <img class="check" src="images/check_2.png"> </li>
+    <li> <img class="plug_ic" src="images/CombinedShape.png"> <span class="creategroupName">Smart plug 04</span> <span class="creategroupState">Living room, On</span> <img class="check" src="images/check_3.png"> </li>
+    
+  </ul>
+  </div>
+<script src="js/jquery-3.2.1.min.js"></script> 
+<script src="js/fastclick.min.js"></script> 
+<script src="js/lenovoSmartJsSdk.js"></script> 
+<script src="js/js.js"></script> 
+<script src="js/plug.js"></script>
+</body>
+</html>

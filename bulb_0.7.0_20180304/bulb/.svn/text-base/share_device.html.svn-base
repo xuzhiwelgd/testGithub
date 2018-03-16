@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+  <meta charset="UTF-8">
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <meta name="full-screen" content="yes">
+  <meta name="x5-fullscreen" content="true">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="format-detection" content="telephone=no,email=no" />
+  <title>Connected successfully</title>
+  <link rel="stylesheet" type="text/css" href="css/bulb2.css">
+  <link rel="stylesheet" type="text/css" href="css/style.css">
+  <script>
+    !function(){var fontSize=parseFloat(getComputedStyle(document.getElementsByTagName('html')[0], null)['font-size']);function a(){document.documentElement.style.fontSize=document.documentElement.clientWidth/750*10/fontSize*1000+"%"}var b=null;window.addEventListener("resize",function(){clearTimeout(b);b=setTimeout(a,300)},!1);a()}(window);
+  </script>
+  </head>
+  <body style="background: #fff">
+<header>
+    <p class="headerTitle">Connected successfully</p>
+  </header>
+<div class="succ_connected_banner"><img src="images/smarblub.jpg"></div>
+<div class="share_device_wrap">
+<p>Share the device with:</p>
+<ul class="shareMan">
+  <li><img src="images/tango.jpg"><span>Tango</span></li>
+  <li><img src="images/Jack.jpg"><img class="share_checked" src="images/Oval_checked.png"><span>Jack</span></li>
+  <li><img src="images/allen.jpg"><span>Allen</span></li>
+  <li><img src="images/Allen_1.jpg"><span>Allen_1</span></li>
+  <li><img src="images/tango1.jpg"><span>Tango1</span></li>
+  <ol><img src="images/add.png"><span>Add</span></ol>
+</ul>
+</div>
+<button class="nextBtn">GET STARTED</button>
+<script src="js/jquery-3.2.1.min.js"></script>
+<script src="js/fastclick.min.js"></script>
+<script src="js/lenovoSmartJsSdk.js"></script> 
+<script src="js/bulb.js"></script>
+<script type="text/javascript">
+//获取设备号
+gadgetId = localStorage.getItem("gadgetId");
+//[step1]根据id获取设备信息，并呈现在页面上
+if(gadgetId){
+  LenSmJs.GetGagdgetInfoWithId_h5(gadgetId);
+}
+
+LenSmJs.GetShareUserArray_h5(gadgetId)
+
+$(document).on('click', '.nextBtn', function(){
+  location.href = 'index.html'
+})
+
+function callbackdata(id,name,data){
+  if (name == "GetShareUserArray") {
+    if (data.state === "1") {
+      var shareManHtml = '';
+      for (var i = 0; i < data.value.length; i++) {
+        shareManHtml += '<li><img src="'+data.value[i].images'"><span>'+data.value[i].name+'</span></li>'
+      }
+    }else{
+      console.log('获取分享成员失败')
+    }
+  }
+}
+</script>
+</body>
+</html>

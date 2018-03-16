@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+  <meta charset="UTF-8">
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <meta name="full-screen" content="yes">
+  <meta name="x5-fullscreen" content="true">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="format-detection" content="telephone=no,email=no" />
+  <title>Timer</title>
+  <link rel="stylesheet" type="text/css" href="css/plug2.css">
+  <link rel="stylesheet" type="text/css" href="css/style.css">
+  <link rel="stylesheet" type="text/css" href="css/mobiscroll.custom-2.17.2.min.css">
+  <script>
+    !function(){var fontSize=parseFloat(getComputedStyle(document.getElementsByTagName('html')[0], null)['font-size']);function a(){document.documentElement.style.fontSize=document.documentElement.clientWidth/750*10/fontSize*1000+"%"}var b=null;window.addEventListener("resize",function(){clearTimeout(b);b=setTimeout(a,300)},!1);a()}(window);
+  </script>
+  </head>
+  <body style="background:#f2f2f2">
+<header> <img src="images/top_back_ic.png" class="headerL" id="backPrev"/>
+    <p class="headerTitle">Timer</p>
+    <p class="headerRP">OK</p>
+  </header>
+<section class="timer_wrap">
+    <p class="timer_title">Set time</p>
+    <ul class="timer_set">
+    <ol id="changeTime"><img src="images/switch_btn.png"></ol>
+    <li id="firstExecute">
+    <div id="openDiv">
+        <p class="timer_switch" data-state='on'>Turn on later</p>
+        <p class="timer_time">
+        <input value="10mins00secs" data-val="10:00" class="appTime0" readonly name="appTime" id="appTime1" type="text">
+      </p>
+        <div class="btn_switch">
+        <input type="checkbox" id="checkbox1" class="chk_3" checked />
+        <label for="checkbox1"></label>
+      </div></div>
+      </li>
+          <li id="secondExecute"><div id="closeDiv">
+        <p class="timer_switch" data-state='off'>Turn off later</p>
+        <p class="timer_time">
+        <input value="10mins00secs" data-val="10:00" class="appTime0" readonly name="appTime2" id="appTime2" type="text">
+      </p>
+        <div class="btn_switch">
+        <input type="checkbox" id="checkbox2" class="chk_3" checked />
+        <label for="checkbox2"></label>
+      </div></div>
+      </li>
+  </ul>
+  </section>
+<script src="js/jquery-3.2.1.min.js"></script>
+<script src="js/fastclick.min.js"></script>
+<script src="js/lenovoSmartJsSdk.js"></script> 
+<script src="js/plug.js"></script> 
+<script src="js/mobiscroll.custom-2.17.2.min.js"></script>
+<script type="text/javascript">
+var gadgetId=LenSmJs.gadgetId_h5();
+if(!gadgetId){
+    gadgetId = localStorage.getItem("gadgetId");
+}
+//[step2:Android 需要传递一次gadgetId，以便其储存起来使用]
+LenSmJs.saveGadgetId_h5(gadgetId);
+//[step3:Android 注册监听:只有实例化的监听才能收到变化通知]
+LenSmJs.getAddListener_h5();
+
+//[step4:进页面去请求、获取设备离线状态]
+LenSmJs.GetGadgetState_h5(gadgetId);
+
+if(gadgetId){
+  //设置新的gadgetId覆盖旧的
+  localStorage.setItem("gadgetId",gadgetId);
+  //初始化页面 主动请求属性数据
+  LenSmJs.FindGadgetById_h5(gadgetId);
+}
+$('#appTime1,#appTime2').mobiscroll().time({
+  display: 'bottom', //显示方式modal
+  theme: 'android-holo-light', //皮肤样式
+  mode: 'scroller', //日期选择模式
+  lang: 'en',
+  setText: '确定',
+  showLabel:'true',
+  timeFormat: 'ii:ss',
+  timeWheels: 'iiss',
+  onChange: function(event,inst){
+    var arr = event.split(':')
+    var minutes = arr[0]
+    var seconds = arr[1]
+    var result = minutes+'mins'+seconds+'secs'
+    $(this).val(result).attr('data-val',event)
+  }
+});
+
+$("#time_1 input").click(function(){
+  $("#time_1").find(".dwwr,.tanbut").css("display","block");
+})
+
+
+$(document).on('click', '#checkbox1', function(){
+  LenSmJs.ExcuteAction_h5(gadgetId,"0x00030002" ,"1");
+})
+
+$(document).on('click', '#changeTime', function(){
+  var time1 = $('#appTime1').attr('data-val')
+  var time2 = $('#appTime2').attr('data-val')
+  var arr1 = time1.split(':')
+  var minutes1 = arr1[0]
+  var seconds1 = arr1[1]
+  var arr2 = time2.split(':')
+  var minutes2 = arr2[0]
+  var seconds2 = arr2[1]
+  var time1Val = minutes1+'mins'+seconds1+'secs'
+  var time2Val = minutes2+'mins'+seconds2+'secs'
+  var isOn = $('#firstExecute').find('.timer_switch').attr('data-state')
+  if (isOn === 'on') {
+    $('#firstExecute').find('.timer_switch').attr('data-state','off')
+    $('#firstExecute').find('.timer_switch').text('Turn off later')
+    $('#appTime1').val(time2Val).attr('data-val',time2)
+    $('#secondExecute').find('.timer_switch').attr('data-state','on')
+    $('#secondExecute').find('.timer_switch').text('Turn on later')
+    $('#appTime2').val(time1Val).attr('data-val',time1)
+  }else{
+    $('#firstExecute').find('.timer_switch').attr('data-state','on')
+    $('#firstExecute').find('.timer_switch').text('Turn on later')
+    $('#appTime1').val(time2Val).attr('data-val',time2)
+    $('#secondExecute').find('.timer_switch').attr('data-state', 'off')
+    $('#secondExecute').find('.timer_switch').text('Turn off later')
+    $('#appTime2').val(time1Val).attr('data-val',time1)
+  }
+})
+</script>
+</body>
+</html>

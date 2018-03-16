@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+  <meta charset="UTF-8">
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <meta name="full-screen" content="yes">
+  <meta name="x5-fullscreen" content="true">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="format-detection" content="telephone=no,email=no" />
+  <title>Schedules</title>
+  <link rel="stylesheet" type="text/css" href="css/bulb2.css">
+  <link rel="stylesheet" type="text/css" href="css/style.css">
+  <script>
+    !function(){var fontSize=parseFloat(getComputedStyle(document.getElementsByTagName('html')[0], null)['font-size']);function a(){document.documentElement.style.fontSize=document.documentElement.clientWidth/750*10/fontSize*1000+"%"}var b=null;window.addEventListener("resize",function(){clearTimeout(b);b=setTimeout(a,300)},!1);a()}(window);
+  </script>
+  </head>
+  <body style="background:#f2f2f2">
+  <header>
+    <img src="images/top_back_ic.png" class="headerL" id="backTop"/>
+    <p class="headerTitle">Schedules</p>
+    <img class="headerRImg" src="images/top_add_ic2.png" id="addSchedules">
+  </header>
+  <div class="addSchedulesEmpty none">
+    <img src="./images/shedules.png"><p>No schedules yet</br>Press the “+ ”to add one</p>
+  </div>
+  <section class="schedules_wrap list none">
+    <ul>
+    </ul>
+  </section>
+  <section class="layer none"></section>
+  <section class="schedulesPopup none">
+    <p class="schedulesTip"></p>
+    <p class="sharePopupTip">Schedules number has reached the ceiling, please delete some and try again.</p>
+    <p class="sharePopupBtn">
+      <a href="javascript:void()" class="canel">CANCEL</a>
+      <a href="javascript:void()" class="ok">OK</a>
+    </p>
+  </section>
+<script src="js/jquery-3.2.1.min.js"></script>
+<script src="js/lenovoSmartJsSdk.js"></script>
+<script src="js/js.js"></script> 
+<script src="js/swiperX.js"></script>
+<script type="text/javascript">
+// ios调用[防止，ios通过链接获取不到gadgetId时，使用]
+function refreshView(data){
+  var data = eval('('+data+')');
+  gadgetId = data.gadget_id;
+  if(gadgetId){
+    localStorage.setItem("gadgetId",gadgetId);
+  }
+}
+//[step1:获取gadgetId并储存]
+gadgetId = LenSmJs.gadgetId_h5();
+if(!gadgetId){
+  gadgetId = localStorage.getItem("gadgetId");
+}
+//[step2:Android 需要传递一次gadgetId，以便其储存起来使用]
+LenSmJs.saveGadgetId_h5(gadgetId);
+//[step3:Android 注册监听:只有实例化的监听才能收到变化通知]
+LenSmJs.getAddListener_h5();
+
+LenSmJs.GetAttrDiscriptionByAttrId_h5(gadgetId, "0x00020007");
+
+if(gadgetId){
+  //设置新的gadgetId覆盖旧的
+  localStorage.setItem("gadgetId",gadgetId);
+  //初始化页面 主动请求属性数据
+  LenSmJs.FindGadgetById_h5(gadgetId);
+}
+
+var is12 = LenSmJs.getHourMode_h5() == "12";
+// var is12 = false;
+var gSchedules = new Array();
+
+$(document).on('click', '#addSchedules', function(){
+  localStorage.setItem('changeNum','-1');
+  if(gSchedules.length>=12){
+    //TODO, show warning message
+    $('.schedulesPopup,.layer').show();
+  }else{
+    localStorage.setItem("gSchedules",JSON.stringify(gSchedules));
+    location.href = 'addSchedules.html'
+  }
+})
+
+$(document).on('click', '.canel,.ok', function(){
+  $('.layer,.schedulesPopup').hide();
+})
+
+$(document).on('click', '#backTop', function(){
+  location.href = 'set.html'
+})
+ 
+var weeks = new Array("SUN","MON","TUE","WED","THU","FRI","SAT");
+function getRepeatString(f,t){
+    var repeatString = "";
+    if(f == "0")
+        return repeatString;
+    for(var i=0; i<7; i++){
+        if(t&1<<i){
+            if(repeatString.length>0)
+                repeatString +=",";
+            repeatString += weeks[i];
+        }
+    }
+    return repeatString;
+}
+function convertTime(mins, is12){
+    var date = new Date()
+    date.setTime((mins+date.getTimezoneOffset())*60000);
+    return date.Format(is12?"hh:mm":"HH:mm");
+}
+
+function isAM(mins){
+    return parseInt(mins/60%24) < 12 ;
+}
+
+function getAM(mins, is12){
+    if(is12){
+      return parseInt(mins/60%24) < 12 ? "AM":"PM" ;
+    }else
+      return "";
+}
+
+function convertTime2(mins){
+    var hour = parseInt(mins/60);
+     while(hour > 24){
+        hour -= 24;
+     }
+     if(hour < 10 )
+        hour = "0"+hour;
+     var min = parseInt(mins%60);
+      if(min < 10 )
+        min = "0"+min;
+        
+     return hour+":"+min;
+}
+
+function getDay(mins){
+  var date = new Date();
+  var nowHour = parseInt(date.getHours());
+  var nowMin = parseInt(date.getMinutes());
+  var nowAllMin = nowHour*60 + nowMin
+  
+  if (nowAllMin >= mins) {
+    return parseInt(1);
+  }else{
+    return parseInt(0);
+  }
+}
+
+function deleteSchedule(index){
+  gSchedules.splice(index,1);
+  setSchedules();
+}
+
+function enableSchedule(index){
+    var tmpStr = gSchedules[index];
+    //F,S,T:M:E,T:M:E
+    var tmpArray = tmpStr.split(",");
+    tmpArray[1] = $('#checkbox'+index).prop("checked")?"1":"0";
+    tmpStr = "";
+    for(var i=0; i<tmpArray.length; i++ ){
+        if(i!=0)
+            tmpStr += ",";
+        tmpStr += tmpArray[i];
+    }
+    gSchedules[index] = tmpStr;
+    setSchedules();
+}
+
+
+function showSchedule(){
+    if(gSchedules.length == 0){
+        $('.schedules_wrap ul').html("").addClass('none')
+        $('.addSchedulesEmpty').show();
+        return;
+    }
+    var schedulesHtml = "";
+
+    for(var i=0; i < gSchedules.length; i++){
+        //F,S,T:M:E,T:M:E
+        var values = gSchedules[i].split(",");
+        console.log(values)
+        var onTimeArray = values[2].split(":");
+        var offTimeArray = values[3].split(":");
+        var repeatString = getRepeatString(values[0],onTimeArray[0]);
+        var enable = values[1] == "1";
+        var isloop = values[0] == "1";
+        
+        var onTime = parseInt(onTimeArray[1]);
+        isloop === true ? onDay = 0 : onDay = getDay(onTime)
+        
+        var onDayp = '+'+onDay+'d';
+        var onAm = getAM(onTime, is12);
+            onTime = convertTime(onTime, is12);
+        
+
+        var offTime = parseInt(offTimeArray[1]);
+        isloop === true ? offDay = 0 : offDay = getDay(offTime)
+        var offDayp = '+'+offDay+'d';
+        var offAm = getAM(offTime, is12);
+            offTime = convertTime(offTime, is12);
+
+        var onEnable = onTimeArray[2] == "1";
+        var offEnable = offTimeArray[2] == "1";
+
+        schedulesHtml += '<li data-num='+ i +'><div class="schedules_Main"><p class="loop">'+repeatString+'</p><div class="timeL"><p class="time">'+(onEnable?onTime:"--:--")+'</p><p class="am_on"><span class="day '+(onDay == 0 ? 'day0':'')+'">'+(onDay == 0 ? '':onDayp)+'</span><span class="am">'+onAm+'</span><span class="off on">'+"On"+'</span></p></div><p class="separate"><img src="images/rectangle.png"></p><div class="timeL"><p class="time">'+(offEnable?offTime:"--:--")+'</p><p class="am_on"><span class="day '+(offDay == 0 ? 'day0':'')+'">'+(offDay == 0 ? '':offDayp)+'</span><span class="am">'+offAm+'</span><span class="off">'+"Off"+'</span></p></div></div><div class="btn_switch2"><input type="checkbox" id="checkbox'+i+'" class="chk_3" '+(enable?'checked':'')+' onclick=enableSchedule('+i+') /><label for="checkbox'+i+'"></label></div><div class="schedules_del"><img onclick=deleteSchedule('+i+') src="images/delet_ic.png"></div></li>'
+      }
+    $('.schedules_wrap ul').html(schedulesHtml).closest('section').removeClass('none')
+}
+
+checkDay();
+function checkDay(){
+  if ($('.am_on .day').text() == "") {
+    $('.am_on .day').css('border','none')
+  }
+}
+
+$(document).on('click', '.schedules_wrap ul li .schedules_Main', function(){
+  var changeNum = $(this).closest('li').attr('data-num')
+  localStorage.setItem('changeNum', changeNum)
+  location.href = 'addSchedules.html'
+})
+
+function dealData(val){
+    gSchedules = new Array();
+    if (val!=null && val.length > 0) {
+      var schedules = val.split(";");
+      for (var i=0; i < schedules.length; i++) {
+        if(schedules[i]=="")
+            continue;
+        gSchedules.push(schedules[i]);
+      }
+    }
+
+    showSchedule();
+}
+
+function callbackdata(id,name,data){
+   console.log("callbackdata id="+id+", name="+name+", data="+data)
+  if(name == "BackExcuteList"){
+    if(!data)
+        return;
+    if(typeof(data) == "string"){
+        data = eval('('+data+')');
+    }
+    
+    $.each(data,function(i,v){
+      var bsxid;
+      if(v.attribute_id){
+        bsxid = v.attribute_id;
+      }
+      var val = "";
+      if(v.value){
+        val = v.value[0];
+      }
+      console.log("updateActionsState("+bsxid+","+val+")");
+      
+      if( bsxid == "0x00020007"){ //定时
+        dealData(val)
+        localStorage.setItem('schedulesData',val)
+      }
+    })
+  }else if (name == "GetAttrDiscriptionByAttrId") {
+    if(typeof(data) == "string"){
+       data = eval('('+data+')');
+     }
+    dealData(data.value[0]);
+  }
+}
+
+
+// var data = '{"value":["1,1,14:3900:0,14:14:1;1,1,14:3900:1,14:14:0;0,1,14:859:1,14:14000:1;;;;;;;;;"],"attribute_id":"0x00020007"}'
+
+//localStorage.setItem('schedulesData',data)
+<!-- var data = '{"value":[";;;;;;;;;;;"],"attribute_id":"0x00020007"}'-->
+
+<!--callbackdata("","GetAttrDiscriptionByAttrId",data)-->
+<!-- data = '[{"value":["1,0,14:390:1,14:14:1;;;;;;;;;;;"],"attribute_id":"0x00020007"}]'-->
+<!-- callbackdata("","BackExcuteList",data)-->
+<!--console.log( "0 ="+convertTime(0, true)+getAM(0*60, true))-->
+<!--console.log( "0 ="+convertTime(0, false)+getAM(0*60,false))-->
+<!--console.log("12="+convertTime(12*60, true)+getAM(12*60,true))-->
+<!--console.log("12="+convertTime(12*60, false)+getAM(12*60,false))-->
+<!--console.log("18="+convertTime(18*60, true)+getAM(18*60,true))-->
+<!--console.log("18="+convertTime(18*60, false)+getAM(18*60,false))-->
+
+</script> 
+</body>
+</html>

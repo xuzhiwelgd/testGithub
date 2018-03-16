@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <meta name="full-screen" content="yes">
+  <meta name="x5-fullscreen" content="true">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="format-detection" content="telephone=no,email=no" />
+  <title>New version</title>
+  <link rel="stylesheet" type="text/css" href="css/style.css">
+  <link rel="stylesheet" type="text/css" href="css/bulb.css">
+  <script>
+    !function(){var fontSize=parseFloat(getComputedStyle(document.getElementsByTagName('html')[0], null)['font-size']);function a(){document.documentElement.style.fontSize=document.documentElement.clientWidth/750*10/fontSize*1000+"%"}var b=null;window.addEventListener("resize",function(){clearTimeout(b);b=setTimeout(a,300)},!1);a()}(window);
+  </script>
+</head>
+<body style="background:#f2f2f2">
+  <header>
+    <img src="images/top_back_ic.png" class="headerL" id="backTop"/>
+    <p class="headerTitle">New version</p>
+  </header>
+  <section class="Main">
+      <img src="images/bulb.png" class="aboutImg" />
+      <p class="aboutName">Lenovo indoor bulb</p>
+      <p class="currentVersion"><span id="GcurrV">sv.1.1.3</span>Current version</p>
+      <div class="latestVersion"><p class="latestVersionTip"><span id="GnewV">sv.1.1.4</span>Latest version</p>
+      <p class="versionMac">MAC:28-39-89-d9-k9</p>
+      <p class="versionText">change log:</br>1.update content update content update content update content update content update</p>
+      </div>
+  </section>
+  <p class="removeBtnWrap"><button class="setBtn" id="updateBtn">UPDATE</button></p>
+
+  <script src="js/jquery-3.2.1.min.js"></script>
+  <script src="js/fastclick.min.js"></script>
+  <script src="js/js.js"></script>
+  <script src="js/lenovoSmartJsSdk.js"></script>
+  <script src="js/bulb.js"></script>
+  <script type="text/javascript">
+  var gadgetId;
+  var Gvision;
+  var Gline;
+  var GupdateState;
+  var GnewVersion;
+  var GcurrVersion;
+
+  //获取设备号
+  gadgetId = localStorage.getItem("gadgetId");
+  //[step1]根据id获取设备信息，并呈现在页面上
+  if(gadgetId){
+    //[step1]根据id获取设备信息，并呈现在页面上
+    LenSmJs.GetGagdgetInfoWithId_h5(gadgetId);
+    //[step2:进页面去请求、获取设备离线状态]
+    LenSmJs.GetGadgetState_h5(gadgetId);
+  }
+
+  //[step3:Android 注册监听:只有实例化的监听才能收到变化通知]
+  LenSmJs.getAddListener_h5();
+
+  //获取最新版本的版本号,判断是否是新版本
+  var currVersion = localStorage.getItem("GcurrVersion");
+
+  var macAddress = LenSmJs.GetAttrDiscriptionByAttrId_h5(gadgetId, "0x1000000c");
+  console.log('macAddress:'+macAddress)
+
+  var gadgetTypeId = "102";//1000101
+  var ms = "lenovoBulb";
+  LenSmJs.getGadgetTypeVersion_h5(gadgetTypeId,ms,currVersion);
+
+  $(document).on('click', '#updateBtn', function(){
+    if(Gvision == 1){
+      if(Gline == 0){
+        bulb.dialogShow('设备已离线');
+      }else{
+        if(GupdateState == 0){
+          //更新 提示
+          bulb.dialogShow('设备正在更新中，请稍等...')
+        }
+      }
+    }else{
+      //不更新 提示
+    }
+    Gvision = 0;
+    //版本更新
+    LenSmJs.ExcuteAction_h5(gadgetId,"0x1000000a" ,"1");
+    GupdateState = 1;
+  })
+
+  function callbackdata(id,name,data){
+    //初始化获取设备信息
+    if(name == "GetGagdgetInfoWithId"){
+      var data = eval('(' + data + ')');
+      Gname = data.gadget_name;
+      GhubId = data.hub_id;
+      GroomId = data.room_id;
+      GclientData = data.client_data;
+      Gpush_msg_flag = data.push_msg_flag;
+      if(Gpush_msg_flag == "1" || Gpush_msg_flag == true){
+        Gpush_msg_flag = "1";
+      }else{
+        Gpush_msg_flag = "0";
+      }
+    }
+    if(name == "getGadgetTypeVersion"){
+      if(typeof(data) == "string"){
+          data = eval('('+data+')');
+      }
+      if(data.state === '1'){
+        GnewVersion = data.code;
+        GcurrVersion = localStorage.getItem("GcurrVersion");
+        console.log('GnewVersion:'+GnewVersion+'GcurrVersion:'+GcurrVersion)
+        if(GnewVersion != GcurrVersion){
+          //不相等，则证明有新版本
+          Gvision = 1;
+        }else{
+          Gvision = 0;
+        }
+      }else{
+        Gvision = 0;
+      }
+    }
+    //通过监听获取升级状态的值
+    if( name == "BackExcuteList"){
+      if(typeof(data) == "string"){
+        data = eval('('+data+')');
+      }
+      updateActionsState(data);
+    }
+    // 初始化
+    initialise();
+  }
+
+  function initialise(){
+    if (GcurrVersion) {
+      $('#GcurrV').text(GcurrVersion)
+    }else{
+      $('#GcurrV').text('System error')
+    }
+
+    if (GnewVersion) {
+      $('#GnewV').text(GnewVersion)
+    }else{
+      $('#GnewV').text('System error')
+    }
+  }
+
+  //刷新属性状态
+  function updateActionsState(data){
+    if(data){
+      $.each(data,function(i,v){
+        var bsxid;
+        if(v.attribute_id){
+          bsxid = v.attribute_id;
+        }
+        var val = 0;
+        if(v.value){
+          val = v.value[0];
+        }
+        if( bsxid == "0x1000000a"){
+          //根据监听获取升级状态的值
+          GupdateState = val;
+        }
+      });
+    }
+  }
+
+  $(document).on('click', '#backTop', function(){
+    window.history.back()
+  })
+  </script>
+</body>
+</html>

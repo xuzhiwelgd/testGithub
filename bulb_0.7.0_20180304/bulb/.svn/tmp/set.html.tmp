@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <meta name="full-screen" content="yes">
+  <meta name="x5-fullscreen" content="true">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="format-detection" content="telephone=no,email=no" />
+  <title>Settings</title>
+  <link rel="stylesheet" type="text/css" href="css/style.css">
+  <link rel="stylesheet" type="text/css" href="css/bulb.css">
+  <script>
+    !function(){var fontSize=parseFloat(getComputedStyle(document.getElementsByTagName('html')[0], null)['font-size']);function a(){document.documentElement.style.fontSize=document.documentElement.clientWidth/750*10/fontSize*1000+"%"}var b=null;window.addEventListener("resize",function(){clearTimeout(b);b=setTimeout(a,300)},!1);a()}(window);
+  </script>
+</head>
+<body style="background:#f2f2f2">
+  <header>
+    <img src="images/top_back_ic.png" class="headerL" id="backPrev1"/>
+    <p class="headerTitle">Settings</p>
+  </header>
+  <section class="content">
+    <div class="setMain">
+      <p class="setClassify">General settings</p>
+      <ul class="setUl">
+        <li>
+          <a href="timer.html">
+            <p class="setliTitle">Timer</p>
+            <p class="setliR">
+              <span></span>
+              <img src="images/more_ic.png" >
+            </p>
+          </a>
+        </li>
+        <li>
+          <a href="schedules.html">
+            <p class="setliTitle">Schedules</p>
+            <p class="setliR">
+              <span></span>
+              <img src="images/more_ic.png" >
+            </p>
+          </a>
+        </li>
+        <li id="shareDevice">
+          <a href="javascript:void(0)">
+            <p class="setliTitle">Share device</p>
+            <p class="setliR">
+              <span></span>
+              <img src="images/more_ic.png" >
+            </p>
+          </a>
+        </li>
+        <li id="deviceRenameLi">
+          <p class="setliTitle">Raname device</p>
+          <p class="setliR">
+            <span id="device_name">Smart bulb 1</span>
+            <img src="images/more_ic.png" >
+          </p>
+        </li>
+        <li>
+          <a href="creategroup.html">
+            <p class="setliTitle">Create group</p>
+            <p class="setliR">
+              <span></span>
+              <img src="images/more_ic.png" >
+            </p>
+          </a>
+        </li>
+      </ul>
+      <p class="setClassify">Device</p>
+      <ul class="setUl">
+        <li>
+          <a href="about.html">
+            <p class="setliTitle">About smart bulb</p>
+            <p class="setliR">
+              <span></span>
+              <img src="images/more_ic.png" >
+            </p>
+          </a>
+        </li>
+        <li id="checkUpdate">
+          <a href="newVersion.html">
+            <p class="setliTitle" id="updateTxt">Check for updates</p>
+            <p class="setliR">
+              <span></span>
+              <img src="images/more_ic.png" id="update">
+            </p>
+          </a>
+        </li>
+        <li>
+          <p class="setliTitle">FAQ</p>
+          <p class="setliR">
+            <span></span>
+            <img src="images/more_ic.png" >
+          </p>
+        </li>
+      </ul>
+    </div>
+  </section>
+  <section class="layer none"></section>
+  <section class="sharePopup none">
+    <p class="sharePopupTitle">Remove devices?</p>
+    <p class="sharePopupTip">After the device is removed,the shortcut will also be delete from the room it belongs.</p>
+    <p class="sharePopupBtn">
+      <a href="javascript:void()" class="canel">CANCEL</a>
+      <a href="javascript:void()" class="delete">REMOVE</a>
+    </p>
+  </section>
+  <div class="deviceNPW none">
+    <div class="deviceNP">
+      <p>Rename device</p>
+      <span>
+        <input type="text" value="Lenovo Bulb" id="deviceReName" />
+        <img class="device_name_del device_name_del2 none" src="images/next_ic_x.png">
+      </span>
+      <p class="errTip"></p>
+      <div class="deviceNP_btn">
+        <button class="cancleBtn">CANCEL</button>
+        <button class="saveBtn" id="deviceRenameSave">SAVE</button>
+      </div>
+    </div>
+  </div>
+  <div class="bg none"></div>
+  <p class="dialog" id="dialog"></p>
+  <p class="removeBtnWrap"><button class="setBtn" id="removeBtn">REMOVE</button></p>
+  <script src="js/jquery-3.2.1.min.js"></script>
+  <script src="js/fastclick.min.js"></script>
+  <script src="js/lenovoSmartJsSdk.js"></script>
+  <script src="js/js.js"></script>
+  <script src="js/bulb.js"></script>
+  <script type="text/javascript">
+  var Gname;
+  var Gnewname;
+  var gadgetId;
+  var GhubId;
+  var Gvision;
+  var Gline;
+  var GroomId;
+  var GclientData;
+  var Gpush_msg_flag;
+  var GupdateState = 0;
+
+  //获取设备号
+  gadgetId = localStorage.getItem("gadgetId");
+  //[step1]根据id获取设备信息，并呈现在页面上
+  if(gadgetId){
+    //[step1]根据id获取设备信息，并呈现在页面上
+    LenSmJs.GetGagdgetInfoWithId_h5(gadgetId);
+    //[step2:进页面去请求、获取设备离线状态]
+    LenSmJs.GetGadgetState_h5(gadgetId);
+  }
+
+  //[step3:Android 注册监听:只有实例化的监听才能收到变化通知]
+  LenSmJs.getAddListener_h5();
+
+  //获取最新版本的版本号,判断是否是新版本
+  var currVersion = localStorage.getItem("GcurrVersion");
+
+  var gadgetTypeId = "102";//1000101
+  var ms = "Mainstream";
+  LenSmJs.getGadgetTypeVersion_h5(gadgetTypeId,ms,currVersion);
+
+  $(document).on('click', '#removeBtn', function(){
+    $('.sharePopup,.layer').show();
+  })
+
+  $(document).on('click', '.canel', function(){
+    $('.sharePopup,.layer').hide();
+  })
+
+  $(document).on('click', '.delete', function(){
+    console.log("step1:开始解绑设备:hubId="+hubId);
+    
+    LenSmJs.UnbindHub_h5("ITEM_TYPE_HUB",GhubId);
+    $('.sharePopup,.layer').hide();
+  })
+
+  $(document).on('click', '#shareDevice', function(){
+    console.log('设备分享')
+    LenSmJs.ShareGadgets_h5();
+  })
+
+  $(document).on('click', '#deviceRenameLi', function(){
+    var device_name = $('#device_name').text();
+    if(parseInt(device_name.length) > 0){
+      $('.saveBtn').addClass('saveBtnOn')
+      $('.device_name_del').show()
+    }else{
+      $('.saveBtn').removeClass('saveBtnOn')
+      $('.device_name_del').hide()
+    }
+    $('#deviceReName').val(device_name);
+    $('.deviceNPW,.bg').show();
+  })
+
+  $("#deviceReName").bind('input propertychange', function() {
+    var datalen = parseInt($.trim($("#deviceReName").val()).length)
+    if (datalen > 0) {
+      $('.device_name_del2').show()
+      $('.saveBtn').addClass('saveBtnOn')
+    }else{
+      $('.device_name_del2').hide()
+      $('.saveBtn').removeClass('saveBtnOn')
+    }
+    $('.deviceNPW .errTip').text('').css('visibility','visible')
+  })
+
+  $(document).on('click', '.device_name_del2', function(){
+    $('#deviceReName').val('')
+  })
+
+  $(document).on('click', '.cancleBtn', function(){
+    $('#deviceReName').val('')
+    $('.device_name_del2').hide()
+    $('.saveBtn').removeClass('saveBtnOn')
+    $('.deviceNPW,.bg').hide()
+  })
+
+  $(document).on('click', '#deviceRenameSave', function(){
+    if ($('#deviceRenameSave').hasClass('saveBtnOn') === true) {
+      GupNameState = 0;
+      var val = $('#deviceReName').val();
+      if (Gname != val) {
+        //【接口3】修改名字接口
+       if(val){
+           Gnewname = val;
+       }else{
+           Gnewname = "lenovo bulb";
+       }
+       //修改设备名字
+       LenSmJs.ModifyGagdgetInfoWithId_h5(gadgetId, Gnewname, GroomId, GclientData, Gpush_msg_flag,"gnewname");
+       $('.deviceNPW,.bg').hide();
+      }else{
+        $('.deviceNPW .errTip').text('Name has already existed.').css('visibility','visible')
+      }
+    }else{
+      $('.deviceNPW .errTip').text('The device name cannot be empty.').css('visibility','visible')
+    }
+  })
+
+  function callbackdata(id,name,data){
+    //初始化获取设备信息
+    if(name == "GetGagdgetInfoWithId"){
+      var data = eval('(' + data + ')');
+      Gname = data.gadget_name;
+      GhubId = data.hub_id;
+      GroomId = data.room_id;
+      GclientData = data.client_data;
+      Gpush_msg_flag = data.push_msg_flag;
+      if(Gpush_msg_flag == "1" || Gpush_msg_flag == true){
+        Gpush_msg_flag = "1";
+      }else{
+        Gpush_msg_flag = "0";
+      }
+    }
+    if(name == "UnbindHub"){
+      console.log("step2:解绑设备返回");
+      data = eval('(' + data + ')');
+      if(data.state == "1"){
+        //显示“设备移除成功”
+        bulb.dialogShow('设备移除成功');
+        $('.sharePopup,.layer').hide();
+        setTimeout(function(){
+          LenSmJs.initFinish_h5();
+        },1300);
+      }else{
+        //移除失败
+        console.log("step5:设备移除失败");
+        $('.sharePopup,.layer').hide();
+        bulb.dialogShow('设备移除失败');
+      }
+    }
+    if(name == "GetGadgetState"){
+      var data =eval('('+data+')');
+      if(data.state == 1){
+        Gline = 1;
+      }else{
+        Gline = 0;
+      }
+      if(Gline == 0){
+        //提示设备已离线提示
+        bulb.dialogShow('设备已离线');
+      }
+    }
+    if (name == "ModifyGagdgetInfoWithId") {
+      var data =eval('('+data+')');
+      if(data.state == 1){
+        $('#deviceReName').val(Gnewname)
+      }else{
+        $('.deviceNPW,.bg').show();
+        $('.deviceNPW .errTip').text('Modify the failure.').css('visibility','visible')
+      }
+    }
+    if(name == "getGadgetTypeVersion"){
+      if(typeof(data) == "string"){
+          data = eval('('+data+')');
+      }
+      if(data.version){
+        var GnewVersion = data.version;
+        var GcurrVersion = localStorage.getItem("GcurrVersion");
+        if(GnewVersion != GcurrVersion){
+          //不相等，则证明有新版本
+          Gvision = 1;
+        }else{
+          Gvision = 0;
+        }
+      }else{
+        Gvision = 0;
+      }
+    }
+    //通过监听获取升级状态的值
+    if( name == "BackExcuteList"){
+      if(typeof(data) == "string"){
+        data = eval('('+data+')');
+      }
+      updateActionsState2(data);
+    }
+    // 初始化
+    initialise();
+  }
+  
+  function initialise(){
+    if(Gvision == 1){
+      //设备更新提示[有新版本],每天提示一次
+      var dd2 = new Date();
+      var curDay2 = dd2.getDate();
+      var oldDay2 = localStorage.getItem("newDay2");
+      if(oldDay2){
+        if(parseInt(oldDay2) != parseInt(curDay2)){
+          //储存的时间和当前的不在同一天
+          // $('#checkUpdate .setliR span').text('有新的固件版本')
+          //2、存储访问日期
+          localStorage.setItem("newDay2",curDay2);
+        }
+      }else{
+        //没有存储的时间，也就是用户第一次访问。
+        // $('#checkUpdate .setliR span').text('有新的固件版本')
+        //2、存储访问日期
+        localStorage.setItem("newDay2",curDay2);
+      }
+    }else{
+      //【无新版本】
+       // $('#checkUpdate .setliR span').text('已是最新版本')
+    }
+
+    if(Gname){
+      if(GupNameState == 0){
+        $("#gadgetName").val(Gname);
+      }
+    }else{
+      $("#gadgetName").val("Smart Bulb");
+    }
+
+  }
+
+  //刷新属性状态
+  function updateActionsState2(data){
+    if(data){
+      $.each(data,function(i,v){
+        var bsxid;
+        if(v.attribute_id){
+          bsxid = v.attribute_id;
+        }
+        var val = 0;
+        if(v.value){
+          val = v.value[0];
+        }
+        if( bsxid == "0x1000000a"){
+          //根据监听获取升级状态的值
+          GupdateState = val;
+        }
+      });
+    }
+  }
+      
+  //首页返回
+  $(document).on('click', '#backPrev1', function(){
+    console.log("backPrev1 was clicked");
+    window.history.back();
+  })
+  
+  // $(document).on('click', '#update', function(){
+  //   LenSmJs.ExcuteAction_h5(gadgetId,"0x1000000a" ,"1");
+  // })
+  </script>
+</body>
+</html>

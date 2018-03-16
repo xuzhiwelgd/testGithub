@@ -1,0 +1,28 @@
+(function(){
+  var plug = new Object()
+
+  plug.load = function(){
+    FastClick.attach(document.body);
+
+    //首页返回
+    $(document).on('click', '#backPrev', function(){
+      LenSmJs.initFinish_h5()
+
+    })
+    if(LenSmJs.isAndroid == true){
+      //Android 点击手机物理返回键
+      pushHistory();
+      window.addEventListener("popstate", function(e) {
+        LenSmJs.initFinish_h5();
+      }, false);
+      function pushHistory() {
+        var state = {
+          title: "title",
+          url: "#"
+        };
+        window.history.pushState(state, "title", "#");
+      }
+    }
+  }
+  plug.load()
+})()

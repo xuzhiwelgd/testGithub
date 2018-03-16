@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <meta name="full-screen" content="yes">
+  <meta name="x5-fullscreen" content="true">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="format-detection" content="telephone=no,email=no" />
+  <title>Smart plug group</title>
+  <link rel="stylesheet" type="text/css" href="css/style.css">
+  <link rel="stylesheet" type="text/css" href="css/plug.css">
+  <script>
+    !function(){var fontSize=parseFloat(getComputedStyle(document.getElementsByTagName('html')[0], null)['font-size']);function a(){document.documentElement.style.fontSize=document.documentElement.clientWidth/750*10/fontSize*1000+"%"}var b=null;window.addEventListener("resize",function(){clearTimeout(b);b=setTimeout(a,300)},!1);a()}(window);
+  </script>
+</head>
+<body>
+  <header>
+    <img src="images/top_back_ic.png" class="headerL" id="backPrev"/>
+    <p class="headerTitle">Smart plug group</p>
+    <img src="images/top_more_ic.png" class="headerRImg" />
+  </header>
+    <div class="groupTip">
+  <p>5 bulbs,2 devices off line</p>
+  </div>
+  <section class="content">
+    <img src="images/PLUG_on.png" class="plusStateImg" id="plusStateImg" data-sxid='0x00030000'/>
+    <p id="plusStateFont" class="plusStateFont">ON</p>
+    <p class="ChargingTitle">Charging Protection</p>
+    <p class="ChargingTip">Charging Protection is activited</p>
+    <div class="plugAllFunction">
+      <p class="Timer" data-sxid='0x00030002'>
+        <img src="images/plugTimer.png" class="plugAllFunctionImg" />
+      </p>
+      <p class="Schedules" data-sxid='0x00030003'>
+        <img src="images/plugSchedules.png" class="plugAllFunctionImg"/>
+      </p>
+      <p class="Charging off" data-sxid="0x00030001">
+        <img src="images/plugCharing.png" class="plugAllFunctionImg"/>
+      </p>
+    </div>
+  </section>
+
+  <script src="js/jquery-3.2.1.min.js"></script>
+  <script src="js/fastclick.min.js"></script>
+  <script src="js/lenovoSmartJsSdk.js"></script>
+  <script src="js/js.js"></script>
+  <script src="js/plug.js"></script>
+  <script type="text/javascript">
+    /**
+     *  全局变量
+     *  onoff：设备开关 默认 0 关闭; 1 打开
+     *  Gline：设备在线/离线 0离线  1 在线
+     */
+    var Gline;
+    var onoff;
+    var gadgetId;
+
+    //ios调用[防止，ios通过链接获取不到gadgetId时，使用]
+    function refreshView(data){
+      var data = eval('('+data+')');
+      gadgetId = data.gadget_id;
+      Gline = data.status;
+      if(gadgetId){
+        localStorage.setItem("gadgetId",gadgetId);
+      }
+      data = data.attributes;
+      updateActionsState(data);
+    }
+
+    //[step1:获取gadgetId并储存]
+    gadgetId = LenSmJs.gadgetId_h5();
+    if(!gadgetId){
+      gadgetId = localStorage.getItem("gadgetId");
+    }
+    //[step2:Android 需要传递一次gadgetId，以便其储存起来使用]
+    LenSmJs.saveGadgetId_h5(gadgetId);
+    //[step3:Android 注册监听:只有实例化的监听才能收到变化通知]
+    LenSmJs.getAddListener_h5();
+
+    //[step4:进页面去请求、获取设备离线状态]
+    LenSmJs.GetGadgetState_h5(gadgetId);
+
+    if(gadgetId){
+      //设置新的gadgetId覆盖旧的
+      localStorage.setItem("gadgetId",gadgetId);
+      //初始化页面 主动请求属性数据
+      LenSmJs.FindGadgetById_h5(gadgetId);
+    }
+
+    $(document).on('click', '#plusStateImg', function(){
+      if(Gline == 1){
+        if(onoff == 1){
+          //【接口3】发送开关关闭操作
+          LenSmJs.ExcuteAction_h5(gadgetId,"0x00030000" ,"0");
+          //发出命令之后，不管服务器响应不响应，就要改变状态
+          $('#plusStateImg').prop('src','images/PLUG_off.png')
+          $('#plusStateFont').text('OFF')
+          //改变开关状态
+          onoff = 0;
+        }else{
+          //【接口3】发送开关打开操作
+          LenSmJs.ExcuteAction_h5(gadgetId,"0x00030000" ,"1");
+          $('#plusStateImg').prop('src','images/PLUG_on.png')
+          $('#plusStateFont').text('ON')
+          //改变开关状态
+          onoff = 1;
+        }
+      }else{
+        alert('设备已离线')
+      }
+    })
+
+    $(document).on('click', '.Timer', function(){
+      location.href = "timer.html"
+    })
+
+    // $(document).on('click', '.Schedules', function(){
+    // })
+
+    $(document).on('click', '.Charging', function(){
+      $('.Charging').hasClass('off') === true
+      ? $('.Charging').removeClass('off').addClass('on') && $('.ChargingTitle,.ChargingTip').css('visibility','visible') && $('.Charging>img').prop('src','images/plugCharingA.png')
+      : $('.Charging').removeClass('off').addClass('off') && $('.ChargingTitle,.ChargingTip').css('visibility','hidden') && $('.Charging>img').prop('src','images/plugCharing.png')
+    })
+
+    //刷新属性状态
+    function updateActionsState(data){
+      if(data){
+        $.each(data,function(i,v){
+          var bsxid;
+          if(v.attribute_id){
+            bsxid = v.attribute_id;
+          }
+          var val = 0;
+          if(v.value){
+            val = v.value[0];
+          }
+          if( bsxid == "0x00030000"){
+            //开关返回
+            onoff = val;
+            //只在主动控制时，弹出，设备已关闭提示
+            if(onoff == 0  && Gcontaled == 1){
+              alert('设备已关闭')
+            }
+          }
+          if( bsxid == "0x10000001"){
+            //储存当前版本号
+            var GcurrVersion = val;
+            localStorage.setItem("GcurrVersion",GcurrVersion);
+          }
+          if(  bsxid == "0x10000004"){
+            //SN号（序列号）
+            var snNum = val;
+            localStorage.setItem("snNum",snNum);
+          }  
+        })
+        if(onoff == 1){
+          $('#plusStateImg').prop('src','images/PLUG_on.png')
+          $('#plusStateFont').text('ON')
+        }else{
+          $('#plusStateImg').prop('src','images/PLUG_off.png')
+          $('#plusStateFont').text('OFF')
+        }
+      }
+    }
+    function callbackdata(id,name,data){
+      if (name == 'GetGadgetState') {
+        var Gline = data.state
+      }
+    }
+  </script>
+</body>
+</html>

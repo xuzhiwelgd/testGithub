@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+  <meta charset="UTF-8">
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <meta name="full-screen" content="yes">
+  <meta name="x5-fullscreen" content="true">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="format-detection" content="telephone=no,email=no" />
+  <title>Create group</title>
+  <link rel="stylesheet" type="text/css" href="css/bulb2.css">
+  <link rel="stylesheet" type="text/css" href="css/style.css">
+  <script>
+    !function(){var fontSize=parseFloat(getComputedStyle(document.getElementsByTagName('html')[0], null)['font-size']);function a(){document.documentElement.style.fontSize=document.documentElement.clientWidth/750*10/fontSize*1000+"%"}var b=null;window.addEventListener("resize",function(){clearTimeout(b);b=setTimeout(a,300)},!1);a()}(window);
+  </script>
+  </head>
+  <body style="background: #fff">
+<header>
+<img src="images/top_back_ic.png" class="headerL" id="backPrev"/>
+    <p class="headerTitle">Create group</p>
+    <p class="headerRP">Done</p>
+  </header>
+<div class="succ_connected_banner"><img src="images/smartgroupblub.jpg"></div>
+<div class="succ_connected_wrap">
+    <div class="device_name_wrap">
+    <p>Group name</p>
+    <span>
+      <input type="text" value="Smart bulb group 1" id="device_name" />
+      <img class="device_name_del device_name_del1" src="images/next_ic_x.png"></span>
+      <h3>Name has already existed.</h3>
+      </div>
+    <div class="device_location">
+    <p>Select the device location</p>
+    <ul id="roomLists">
+        <ol id="addBtn">
+          <a href="#" id="addRoom"><img src="images/next_ic.png"></a>
+        </ol>
+      </ul>
+  </div>
+    <div class="device_location">
+    <p>Recommended</p>
+    <ul>
+        <li>Living room</li>
+        <li>Bedroom</li>
+        <li>Kitchen</li>
+      </ul>
+  </div>
+  </div>
+  <div class="deviceNPW none">
+    <div class="deviceNP">
+    <p>Room name</p>
+    <span>
+      <input type="text" value="" id="roomNewName" />
+      <img class="device_name_del device_name_del2 none" src="images/next_ic_x.png"></span>
+     <div class="deviceNP_btn"><button class="cancleBtn">CANCEL</button><button class="saveBtn">SAVE</button></div>
+      </div>
+  </div>
+<button class="nextBtn" id="nextBtn">NEXT</button>
+<div class="bg none"></div>
+<script src="js/jquery-3.2.1.min.js"></script>
+<script src="js/fastclick.min.js"></script>
+<script src="js/lenovoSmartJsSdk.js"></script> 
+<script src="js/js.js"></script>
+<script src="js/bulb.js"></script> 
+<script type="text/javascript">
+var Gname = "Smart Bulb";
+var gadgetId;
+var GroomId;
+var GclientData;
+var Gpush_msg_flag;
+var Ghome_id;
+var Groom_name;
+
+//获取设备号
+gadgetId = localStorage.getItem("gadgetId");
+//[step1]根据id获取设备信息，并呈现在页面上
+if(gadgetId){
+  LenSmJs.GetGagdgetInfoWithId_h5(gadgetId);
+}
+
+//[step2]获取房间列表
+LenSmJs.QueryDataHomeAndRoomList_h5();
+
+//[step3]获取所有家庭home列表[获取当前homeid]
+LenSmJs.GetHomeList_h5();
+
+//[step3]获取所有设备列表[获取当前homeid]
+LenSmJs.GetGadgetsList_h5();
+
+$(document).on('click', '.saveBtn', function(){
+  $("#roomNewName").blur();
+  var roomNewName = $("#roomNewName").val();
+  var roomNewName = $.trim(roomNewName)
+  if (roomNewName && roomNewName != '') {
+    var isRepeat = 0;
+    $("#roomLists li").each(function(){
+      if(roomNewName == $(this).text()){
+        isRepeat = 1;
+      }
+    })
+    if(isRepeat == 0){
+      console.log(isRepeat)
+      Groom_name = roomNewName;
+      $('#addBtn').before('<li>'+Groom_name+'</li>')
+      $('.deviceNPW,.bg').hide()
+      $('#roomNewName').val('')
+      $('.saveBtn').removeClass('saveBtnOn')
+      $('.device_name_del2').hide()
+      LenSmJs.AddRoomWithName_h5(Groom_name,Ghome_id);
+    }else{
+      console.log('房间已存在')
+    }  
+  }else{
+    console.log('error')
+  }
+})
+$(document).on('click', '#nextBtn', function(){
+  var roomId = $("#roomLists li.roomActive").attr("data-roomid");
+  //[step5：修改房间]
+  if(roomId){
+    LenSmJs.ModifyGagdgetInfoWithId_h5(gadgetId, Gname, roomId, GclientData, Gpush_msg_flag,"xgRoomName");
+    location.href="share_device.html"
+  }else{
+    //没有roomId，跳转页面
+    location.href='set.html';
+  }
+})
+
+$("#roomNewName").bind('input propertychange', function() {
+  var datalen = parseInt($.trim($("#roomNewName").val()).length)
+  if (datalen > 0) {
+    $('.device_name_del2').show()
+    $('.saveBtn').addClass('saveBtnOn')
+  }else{
+    $('.device_name_del2').show()
+    $('.saveBtn').removeClass('saveBtnOn')
+  }
+});
+
+$(document).on('click', '.device_name_del1', function(){
+  $('#device_name').val('')
+})
+$(document).on('click', '.device_name_del2', function(){
+  $('#roomNewName').val('')
+})
+
+$(document).on('click', '#roomLists li', function(){
+  $(this).addClass('roomActive').siblings('li').removeClass('roomActive')
+})
+
+$('#roomLists li').longPress(function(){
+  var txt = $(this).text()
+  $('#roomNewName').val(txt)
+  $('.deviceNPW,.bg').show()
+})
+
+$(document).on('click', '#addRoom', function(){
+  $('.deviceNPW,.bg').show()
+})
+
+$(document).on('click', '.cancleBtn', function(){
+  $('#roomNewName').val('')
+  $('.device_name_del2').hide()
+  $('.saveBtn').removeClass('saveBtnOn')
+  $('.deviceNPW,.bg').hide()
+})
+
+function callbackdata(id,name,data){
+  //初始化获取设备信息
+  if(name == "GetGagdgetInfoWithId"){
+    var data = eval('(' + data + ')');
+    Gname = data.gadget_name;
+    GroomId = data.room_id;
+    GclientData = data.client_data;
+    Gpush_msg_flag = data.push_msg_flag;
+    
+    $('#device_name').val(Gname);
+  }
+  //初始化获取房间列表
+  if(name == "QueryDataHomeAndRoomList"){
+    data = eval('('+data+')');
+    var roomList="";
+    $.each(data,function(i,v){
+      if(GroomId == v.room_id){
+        roomList += "<li class='roomActive' data-roomid='"+ v.room_id+"' data-homeid='"+ v.home_id+"'  >"+nameCut(v.room_name)+"</li>";
+      }else{
+        roomList += "<li data-roomid='"+ v.room_id+"' data-homeid='"+ v.home_id+"'  >"+nameCut(v.room_name)+"</li>";
+      }
+    });
+    $('#addBtn').before(roomList);
+  }
+
+  //选择修改房间 ：ModifyGagdgetInfoWithId
+  if(name=="ModifyGagdgetInfoWithId"){
+    var data = eval('('+data+')');
+    if(data.state == 1){
+      location.href='set.html';
+    }
+  }
+  //获取homeid
+  if(name == "GetHomeList"){
+    var data = eval('('+data+')');
+    Ghome_id = data[0].home_id;
+  }
+  //添加room
+  if(name=="AddRoomWithName"){
+    var data = eval('('+data+')');
+    if(data.room_id){
+      GroomId = data.room_id;
+      $('#roomLists li').removeClass("on");
+      var newroom = "<li class='roomActive' data-roomid='"+ GroomId+"' data-homeid='"+ Ghome_id+"'>"+nameCut(Groom_name)+"</li>";
+      $('#addBtn').before(newroom);
+    }
+  }
+  // 获取所有设备信息
+  if(name== "GetGadgetsList"){
+    var data = eval('('+data+')');
+    if(data.state == 1){
+      var num = 0
+      var device_name = Gname;
+      for (var i = 0; i < data.value.length; i++) {
+        if (data.value[i].gadget_name == device_name) {
+          num++
+          device_name = device_name + num
+        }
+      }
+      $('#device_name').val(device_name)
+    }
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <meta name="full-screen" content="yes">
+  <meta name="x5-fullscreen" content="true">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="format-detection" content="telephone=no,email=no" />
+  <title>Device reset</title>
+  <link rel="stylesheet" type="text/css" href="css/style.css">
+  <link rel="stylesheet" type="text/css" href="css/bulb.css">
+  <script>
+    !function(){var fontSize=parseFloat(getComputedStyle(document.getElementsByTagName('html')[0], null)['font-size']);function a(){document.documentElement.style.fontSize=document.documentElement.clientWidth/750*10/fontSize*1000+"%"}var b=null;window.addEventListener("resize",function(){clearTimeout(b);b=setTimeout(a,300)},!1);a()}(window);
+  </script>
+</head>
+<body>
+  <header>
+    <img src="images/top_back_ic.png" class="headerL" id="backPrev"/>
+    <p class="headerTitle">Device reset</p>
+    <p class="headerRP"><a href="#">Help</a></p>
+  </header>
+  <section class="Main">
+    <div class="connected">
+      <img src="images/bulb.png" class="connectedImg" />
+      <p class="connectedTip">Switch the bulb on and off five times in a row，then the bulb will start flashing.After 5 seconds,it will restart and show awhite color,whitch means the bulb has been reset to default
+      </p>
+    </div>
+  </section>
+  <button class="nextBtn" id="nextBtn">NEXT</button>
+
+  <script src="js/jquery-3.2.1.min.js"></script>
+  <script src="js/fastclick.min.js"></script>
+  <script src="js/lenovoSmartJsSdk.js"></script>
+  <script src="js/bulb.js"></script>
+  <script type="text/javascript">
+  //点击返回
+  $(document).on("click", "#nextBtn", function(){
+    localStorage.removeItem("wifiName")
+    localStorage.removeItem("wifiPwd")
+    location.href = "addDevice.html"
+  })
+  </script>
+</body>
+</html>

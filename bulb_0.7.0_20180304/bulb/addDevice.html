@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <meta name="full-screen" content="yes">
+  <meta name="x5-fullscreen" content="true">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="format-detection" content="telephone=no,email=no" />
+  <title>Smart blub</title>
+  <link rel="stylesheet" type="text/css" href="css/style.css">
+  <link rel="stylesheet" type="text/css" href="css/bulb.css">
+  <script>
+    !function(){var fontSize=parseFloat(getComputedStyle(document.getElementsByTagName('html')[0], null)['font-size']);function a(){document.documentElement.style.fontSize=document.documentElement.clientWidth/750*10/fontSize*1000+"%"}var b=null;window.addEventListener("resize",function(){clearTimeout(b);b=setTimeout(a,300)},!1);a()}(window);
+  </script>
+</head>
+<body>
+  <header>
+    <img src="images/top_back_ic.png" class="headerL" id="backPrev"/>
+    <p class="headerTitle">Smart blub</p>
+    <p class="headerRP"><a href="#">Help</a></p>
+  </header>
+  <section class="Main">
+    <div class="connected">
+      <img src="images/bulb.png" class="connectedImg" />
+      <p class="connectedTip">Power on the device and make sure it’s not taken by other people</p>
+      
+    </div>
+  </section>
+  <button class="nextBtn" id="nextBtn">BLUE LIGHT ON</button>
+
+  <script src="js/jquery-3.2.1.min.js"></script>
+  <script src="js/fastclick.min.js"></script>
+  <script src="js/lenovoSmartJsSdk.js"></script>
+  <script src="js/bulb.js"></script>
+  <script type="text/javascript">
+  $(document).on('click', '#nextBtn', function(){
+    location.href = 'add.html'
+  })
+  </script>
+</body>
+</html>

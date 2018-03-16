@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+  <meta charset="UTF-8">
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <meta name="full-screen" content="yes">
+  <meta name="x5-fullscreen" content="true">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="format-detection" content="telephone=no,email=no" />
+  <title>Schedules</title>
+  <link rel="stylesheet" type="text/css" href="css/plug2.css">
+  <link rel="stylesheet" type="text/css" href="css/style.css">
+  <link rel="stylesheet" type="text/css" href="css/plug.css">
+  <script>
+    !function(){var fontSize=parseFloat(getComputedStyle(document.getElementsByTagName('html')[0], null)['font-size']);function a(){document.documentElement.style.fontSize=document.documentElement.clientWidth/750*10/fontSize*1000+"%"}var b=null;window.addEventListener("resize",function(){clearTimeout(b);b=setTimeout(a,300)},!1);a()}(window);
+  </script>
+  </head>
+  <body style="background:#f2f2f2">
+<header><img src="images/top_back_ic.png" class="headerL" id="backPrev"/>
+    <p class="headerTitle">Schedules</p>
+    <img class="headerRImg" src="images/top_add_ic2.png">
+  </header>
+<section class="schedules_wrap list">
+<ul><li>
+<p class="loop">SUN, TUN</p>
+<div class="timeL"><p class="time">10:38</p><p class="am_on"><span class="am">AM</span><span class="off on">On</span></p></div><p class="separate"><img src="images/rectangle.png"></p><div class="timeL"><p class="time">12:48</p><p class="am_on"><span class="am">PM</span><span class="off">Off</span></p></div><div class="btn_switch2">
+        <input type="checkbox" id="checkbox_c50" class="chk_3" checked />
+        <label for="checkbox_c50"></label>
+      </div>
+      <div class="schedules_del"><img src="images/delet_ic.png"></div>
+</li>
+<li>
+<p class="loop">SUN, TUN</p>
+<div class="timeL"><p class="time">10:38</p><p class="am_on"><span class="am">AM</span><span class="off on">On</span></p></div><p class="separate"><img src="images/rectangle.png"></p><div class="timeL"><p class="time">12:48</p><p class="am_on"><span class="am">PM</span><span class="off">Off</span></p></div><div class="btn_switch2">
+        <input type="checkbox" id="checkbox_c50" class="chk_3" checked />
+        <label for="checkbox_c50"></label>
+      </div>
+      <div class="schedules_del"><img src="images/delet_ic.png"></div>
+</li>
+</ul>
+</section>
+<script src="js/jquery-3.2.1.min.js"></script> 
+<script src="js/lenovoSmartJsSdk.js"></script> 
+<script src="js/plug.js"></script> 
+<script src="js/swiperX.js"></script> 
+</body>
+</html>

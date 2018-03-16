@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <meta name="full-screen" content="yes">
+  <meta name="x5-fullscreen" content="true">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="format-detection" content="telephone=no,email=no" />
+  <title>Select WiFi network</title>
+  <link rel="stylesheet" type="text/css" href="css/style.css">
+  <link rel="stylesheet" type="text/css" href="css/bulb.css">
+  <script>
+    !function(){var fontSize=parseFloat(getComputedStyle(document.getElementsByTagName('html')[0], null)['font-size']);function a(){document.documentElement.style.fontSize=document.documentElement.clientWidth/750*10/fontSize*1000+"%"}var b=null;window.addEventListener("resize",function(){clearTimeout(b);b=setTimeout(a,300)},!1);a()}(window);
+  </script>
+  </head>
+  <body style="background: #fff">
+    <header>
+      <img src="images/top_back_ic.png" class="headerL" id="backPrev" />
+      <p class="headerTitle">Select WiFi network</p>
+      <p class="headerRP" id="save">Cancel</p>
+    </header>
+    <div class="wifilogin">
+      <img src="images/wifi_icon.png" class="wifiloginImg" />
+      <p class="networkNotice">5Ghz wireless network is not</br>supported by this device</p>
+      <div class="wifiloginBox">
+        <p class="wifiloginBoxP">
+          <input type="text" value="" placeholder="Wi-Fi name" data-name="" class="wifiName" id="wifiName" />
+          <img src="images/list_ic.png" class="list_ic">
+          <ul class="wifiList none">
+          </ul>
+        </p>
+        <p class="wifiloginBoxP">
+          <input type="password" value="" placeholder="Wi-Fi password" id="wifiPwd" class="wifiPwd" />
+          <img src="images/passwordHide.png" class="passwordState">
+        </p>
+        <button class="chooseOtherWIFI">TAP TO SWITCH WIFI NETWORKS</button>
+      </div>
+      <button class="nextBtn" disabled id="nextBtn">NEXT</button>
+    </div>
+
+    <script src="js/jquery-3.2.1.min.js"></script>
+    <script src="js/fastclick.min.js"></script>
+    <script src="js/lenovoSmartJsSdk.js"></script>
+    <script src="js/base64.js"></script>
+    <script src="js/bulb.js"></script>
+    <script type="text/javascript">
+    var Gis5g = 0
+    var wifis = localStorage.getItem('wifis')
+    // var wifis = [['Lenovo-Internet','123456'],['TP-Link','12345678'],['NETGEAR','123']]
+    //判断当前是不是5G网络
+    
+    LenSmJs.JudgmentWifi5G_h5();
+    //获取当前wifi名称
+    LenSmJs.GetWifiName_h5();
+
+    // 页面从后台进入前台时，触发
+    document.addEventListener("visibilitychange", function() {
+      if(document.visibilityState == "visible"){
+        //判断当前是不是5G网络
+        LenSmJs.JudgmentWifi5G_h5();
+        //获取当前wifi名称
+        LenSmJs.GetWifiName_h5();
+      }
+    })
+
+    // 判断显示或隐藏密码
+    $(document).on('click', '.passwordState', function(){
+      var passwordState = $('#wifiPwd').prop('type');
+      if (passwordState === 'password') {
+        $('#wifiPwd').prop('type','text');
+        $('.passwordState').prop('src','images/passwordShow.png');
+      }else{
+        $('#wifiPwd').prop('type','password');
+        $('.passwordState').prop('src','images/passwordHide.png');
+      }
+    })
+
+	if (wifis == null) {
+    $('.list_ic').hide();
+  }else if (wifis.length >0 && wifis.length < 4) {
+    $('.list_ic').show();
+    for (var i = 0; i < wifis.length; i++) {
+      $('.wifiList').append('<li>'+wifis[i][0]+'</li>')
+    }
+  }
+
+  // 选择其他wifi
+  $(document).on('click', '.chooseOtherWIFI', function(){
+    console.log('跳转至系统wifi设置界面')
+    LenSmJs.getGroups_h5();
+  })
+
+   // wifi下拉切换
+   $(document).on('click', '.list_ic', function(){
+    var nowImg = $('.list_ic').prop('src')
+    if (nowImg.indexOf('list_ic2.png') == -1){
+      $('.wifiList').slideDown('slow',function(){
+        $('.list_ic').prop('src', 'images/list_ic2.png');
+      })
+    }else{
+      $('.wifiList').slideUp('slow',function(){
+        $('.list_ic').prop('src', 'images/list_ic.png');
+      })
+    }
+   })
+
+  $(document).on('click', '.wifiList li', function(){
+    var chooseName = $(this).text();
+    var nameAndPwd;
+    $('#wifiName').val(chooseName);
+    for(var j = 0; j < wifis.length; j++){
+      if (wifis[j][0] === chooseName) {
+        nameAndPwd = wifis[j][1]
+      }
+    }
+    $('#wifiPwd').val(nameAndPwd);
+    $('.wifiList').slideUp('fast',function(){
+      $('.list_ic').prop('src', 'images/list_ic.png');
+    })
+    hrefok();
+  })
+
+    //输入框输入时，显示在可视区域，避免被键盘遮挡
+    $(".wifiloginBoxP input").focus(function(){
+      var _this = $(this);
+      setTimeout(function(){
+        _this.scrollIntoView();
+      },300)
+    });
+
+    $(".wifiloginBoxP input").bind('input propertychange', function() {
+      var curState = localStorage.getItem("rememberPwd");
+      if (curState == 1) {
+        var wifiPwd = $('#wifiPwd').val();
+        localStorage.setItem('wifiPwd',wifiPwd);
+      }
+      hrefok();
+    });
+
+    $(document).on('click', '#nextBtn', function(){
+      var wifiName = $("#wifiName").val();
+      var wifiPwd = $("#wifiPwd").val();
+      if(wifiName && wifiPwd && Gis5g == 0){
+        LenSmJs.SaveSSIDAndPwd_h5(wifiName,wifiPwd);
+        //设置cookie账号密码，以便于跳转到其他页面使用
+        localStorage.setItem("wifiName",wifiName);
+        localStorage.setItem("wifiPwd",wifiPwd);
+        console.log("LenSmJs.isiOS:"+LenSmJs.isiOS);
+        if(LenSmJs.isiOS){
+          location.href='wifiConfirm.html';
+        }else{
+          location.href='connect.html';
+        }
+      }
+    })
+
+    function callbackdata(id,name,data){
+      console.log('callbackdata')
+      //判断当前是不是5G
+      if(name == "JudgmentWifi5G"){
+        var data = eval('('+data+')');
+        if(data.state == "1"){
+          //当前连接是5G网络,暂不支持
+          console.log('暂不支持5Ghz网络')
+          Gis5g = 1;
+        }else{
+          Gis5g = 0;
+        }
+        hrefok();
+      }
+      if(name == "GetWifiName"){
+        var base = new Base64();
+        data = base.decode(data);
+        if (!data) {
+          $("#wifiName").val('');
+        }else{
+          $("#wifiName").val(data);
+        }
+        hrefok();
+      }
+    }
+    hrefok();
+    function hrefok(){
+      var curWifiName = $("#wifiName").val();
+      var curWifiPwd = $('#wifiPwd').val();
+      if(curWifiName && curWifiPwd && Gis5g == 0){
+        $(".nextBtn").removeAttr("disabled").css('background','#fff');
+      }else{
+        $(".nextBtn").attr("disabled",'true').css('background','#d6d6d6');
+      }
+    }
+    </script>
+  </body>
+</html>
